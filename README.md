@@ -41,8 +41,8 @@ I like to keep my code relatively portable and platform-agnostic to mitigate ven
 * **CSS:** PostCSS + Tailwind
 * **Builder:** Vite
 * **UI Library:** Headless UI
-* **Form handling:** `react-hook-form`
-* **Hooks:** ??? maybe `react-use`
+* **Form handling:** `react-hook-form` (???)
+* **Hooks:** `react-use` (???)
 * **Schema Validation:** Zod
 * **Monorepo:** none/`pnpm` workspaces
 

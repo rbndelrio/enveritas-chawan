@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import './App.css'
 
 import { FORMS } from '@chawan/forms'
 import { Five } from '@chawan/react'
