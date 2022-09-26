@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { FORMS } from '@chawan/forms'
 import { Five } from '@chawan/react'
 
-function App() {
+export function App() {
   const [count, setCount] = useState(0)
 
   return (
@@ -18,5 +18,3 @@ function App() {
     </div>
   )
 }
-
-export default App
