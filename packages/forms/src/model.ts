@@ -65,7 +65,7 @@ export interface QuestionVersion extends Base {
   version: number
   content: QuestionContent
   question: Question
-  blockVersions: Block
+  blockVersions?: Block
 }
 
 // TODO: Lot of really rough guesswork here

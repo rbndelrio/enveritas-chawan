@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react'
 
-import type { Question } from '@chawan/forms'
-import { createQuestion, formatDate } from '@chawan/forms'
+import type { Question, QuestionVersion } from '@chawan/forms'
+import { createQuestion, createQuestionVersion } from '@chawan/forms'
+import { Transition } from '@headlessui/react'
 import { Answer as A } from './Answer'
 import { PlusIcon, RemoveIcon, TypedIcon } from './Icon'
 import { Single as Q } from './Single'
+
+import Editor from './Edit'
 
 type QuestionListState = {
   questions: Array<Question>
@@ -13,6 +16,7 @@ type QuestionListState = {
 
 type Status = 'good' | 'normal' | 'warn' | 'alert'
 type QuestionStatus = [Status, string]
+
 const getStatus = (
   question: Question,
   _index: number,
@@ -27,7 +31,7 @@ const getStatus = (
   ) return ['warn', 'Inconsistent mix of translations']
 
   if (question.versions?.length) {
-    const activeVersion = question.versions.find((version) => !version.deleted && version?.content?.data)
+    const activeVersion = inferActiveQuestionVersion(question)
 
     if (!activeVersion) return ['alert', 'No Valid Versions Found']
     if (activeVersion.content.data.question.val) return ['good', '']
@@ -36,6 +40,10 @@ const getStatus = (
   return ['normal', '']
 }
 
+const inferActiveQuestionVersion = (question: Question) => question.versions.find(
+  (version) => (!version.deleted && version?.content?.data)
+) || null
+
 type ControlProps = {
   last: boolean,
   actions: Record<string, React.MouseEventHandler<HTMLButtonElement>>
@@ -43,7 +51,7 @@ type ControlProps = {
 const Controls = ({ last, actions }: ControlProps) => {
   return (
     <>
-      <div className="absolute top-1/4 right-0">
+      <div className="absolute top-4 right-0">
         <button
           type="button"
           onClick={actions.remove}
@@ -95,17 +103,36 @@ export const QuestionWrapper = (props: QuestionProps) => {
     alert: 'text-enveritas-700',
   }
 
-  const addQuestion = () => onQuestionsUpdate({
-    ...state,
-    questions: [...questions, createQuestion()]
-  })
+  const addQuestion = () => {
+    const newQuestion = createQuestion({ typ: question.typ })
+    const newVersion = createQuestionVersion({}, newQuestion, {
+      val: 'Who are you?',
+      type: newQuestion.typ
+    })
+    newQuestion.versions.push(newVersion)
+    onQuestionsUpdate({ ...state, questions: [...questions, newQuestion]})
+  }
 
-  const removeQuestion = (e: any) => {
+  const removeQuestion = () => {
     onQuestionsUpdate({
       ...state,
       questions: questions.filter((_, idx) => q !== idx)
     })
   }
+
+
+  const [showEditor, setEditorVisibility] = useState<Boolean>(false)
+  const revealEditor = () => { setEditorVisibility(true) }
+  const toggleEditor = () => { setEditorVisibility(!showEditor) }
+
+
+  const [activeQuestionVersion, setActiveQuestionVersion] = useState<QuestionVersion | null>(null)
+  const resetActiveQuestionVersion = () => {
+    setActiveQuestionVersion(
+      inferActiveQuestionVersion(question)
+    )
+  }
+
 
   const actions = {
     add: addQuestion,
@@ -122,14 +149,18 @@ export const QuestionWrapper = (props: QuestionProps) => {
         <div className="
           absolute -inset-1 -inset-x-6 bg-transparent -z-10
           group-hover:bg-gray-100 group-focus-within:bg-gray-100
+          transition
         " />
 
         <span className="absolute top-5 left-5 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true" />
         {/* {q !== questions.length - 1 ? (
           <span className="absolute top-5 left-5 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true" />
         ) : null} */}
-        <div className="relative flex items-start space-x-3">
-          <div className="relative px-1">
+        <div
+          className="relative flex items-start space-x-3"
+          onClick={toggleEditor}
+        >
+          <div className="relative px-1 user-select-none">
             <div className={
               MOOD_RING[status] +
               ` relative flex h-8 w-8 items-center justify-center rounded-full
@@ -154,16 +185,34 @@ export const QuestionWrapper = (props: QuestionProps) => {
                   {question.nickname || `Question ${q + 1}`}
                 </div>
               </div>
-              <p className="mt-0.5 text-sm text-gray-500">{formatDate(question.modified_on)}</p>
+              {/* <p className="mt-0.5 text-sm text-gray-500">{formatDate(question.modified_on)}</p> */}
             </div>
             <div className="mt-2 text-xs text-gray-700">
               <p>{question.lang}</p>
             </div>
           </div>
-
           <Q {...props}></Q>
           <A {...props}></A>
         </div>
+
+
+        {/* Question Editor */}
+        <Transition
+          appear={true}
+          show={!showEditor}
+          as={'div'}
+          className="relative z-100 bg-white mx-8 ml-12 -mt-10 top-0"
+          enter="transition-opacity duration-75"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leave="transition-opacity duration-150"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+        >
+          <Editor />
+        </Transition>
+
+
         <Controls
           last={q === questions.length - 1}
           actions={actions}
