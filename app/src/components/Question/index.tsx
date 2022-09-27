@@ -12,21 +12,10 @@ const QuestionList = () => {
   return (
     <section className="main">
       <ul className="todo-list">
-        {appState.todoList
-          .filter((t: Todo): boolean => {
-            switch (pathname) {
-              case '/':
-                return true
-              case '/active':
-                return t.completed === false
-              case '/completed':
-                return t.completed === true
-              default:
-                return true
-            }
-          })
-          .map((t: Todo): ReactElement => {
-            return <Item key={t.id} todo={t} />
+        {[]
+          .filter(Boolean)
+          .map((t: any): React.ReactElement => {
+            return <div key={t.id} />
           })}
       </ul>
     </section>
