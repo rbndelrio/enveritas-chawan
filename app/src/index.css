@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  button,
+  a:where(:link,[href]),
+  a:where(:link,[href]):where(.group) [class*="group-hover"] {
+    @apply transition;
+  }
+}
