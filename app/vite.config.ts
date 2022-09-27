@@ -1,12 +1,14 @@
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
+
+const reactDeps = ['react', 'react-router-dom', 'react-dom', 'react-error-boundary', 'react-router']
 // https://sambitsahoo.com/blog/vite-code-splitting-that-works.html
 import { dependencies } from './package.json';
 function renderChunks(deps: Record<string, string>) {
   let chunks = {};
   Object.keys(deps).forEach((key) => {
-    if (['react', 'react-router-dom', 'react-dom'].includes(key)) return;
+    if (reactDeps.includes(key)) return;
     chunks[key] = [key];
   });
   return chunks;
@@ -20,7 +22,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['react', 'react-router-dom', 'react-dom'],
+          vendor: reactDeps,
           ...renderChunks(dependencies),
         },
       },
