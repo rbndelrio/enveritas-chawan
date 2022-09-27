@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import type { Question } from '@chawan/forms'
 import { createQuestion, formatDate } from '@chawan/forms'
 import { Answer as A } from './Answer'
-import { PlusIcon, TypedIcon } from './Icon'
+import { PlusIcon, RemoveIcon, TypedIcon } from './Icon'
 import { Single as Q } from './Single'
 
 type QuestionListState = {
@@ -21,7 +21,10 @@ const getStatus = (
 ): QuestionStatus => {
   if (question.deleted) return ['alert', 'Question no longer exists']
   if (question.nickname) return ['warn', 'Question should have a nickname']
-  if (state.lang !== question.lang || question.lang !== questions?.[0].lang) return ['warn', 'Inconsistent mix of translations']
+  if (
+    state.lang !== question.lang ||
+    question.lang !== questions?.[0].lang
+  ) return ['warn', 'Inconsistent mix of translations']
 
   if (question.versions?.length) {
     const activeVersion = question.versions.find((version) => !version.deleted && version?.content?.data)
@@ -35,28 +38,45 @@ const getStatus = (
 
 type ControlProps = {
   last: boolean,
-  onClickAdd: React.MouseEventHandler<HTMLButtonElement>
+  actions: Record<string, React.MouseEventHandler<HTMLButtonElement>>
 }
-const Controls = ({ last, onClickAdd }: ControlProps) => {
-  return last
-    ? (
-      <div className="absolute -bottom-8 left-0">
+const Controls = ({ last, actions }: ControlProps) => {
+  return (
+    <>
+      <div className="absolute top-1/4 right-0">
         <button
           type="button"
-          onClick={onClickAdd}
+          onClick={actions.remove}
           className="
-            inline-flex items-center rounded-full border border-transparent
-            bg-enveritas-600 p-2 text-white shadow-sm hover:bg-enveritas-700
-            focus:outline-none focus:ring-2 focus:ring-enveritas-500 focus:ring-offset-2
+            opacity-0
+            group-hover:opacity-100
+            inline-flex items-center rounded-full border border-transparent shadow-none
+            bg-transparent p-1 text-gray-600
+            hover:bg-gray-200 hover:text-rose-700 hover:shadow-sm
+            focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2
           "
         >
-          <PlusIcon />
+          <RemoveIcon />
         </button>
       </div>
-    )
-    : (
-      <></>
-    )
+      {last
+        ? <div className="absolute -bottom-8 left-0">
+            <button
+              type="button"
+              onClick={actions.add}
+              className="
+                inline-flex items-center rounded-full border border-transparent shadow-sm
+                bg-enveritas-600 p-2 text-white hover:bg-enveritas-700
+                focus:outline-none focus:ring-2 focus:ring-enveritas-500 focus:ring-offset-2
+              "
+            >
+              <PlusIcon />
+            </button>
+          </div>
+        : <></>
+      }
+    </>
+  )
 }
 
 interface QuestionProps extends ListProps {
@@ -75,8 +95,22 @@ export const QuestionWrapper = (props: QuestionProps) => {
     alert: 'text-enveritas-700',
   }
 
-  const addQuestion = () => onQuestionsUpdate({ ...state, questions: [...questions, createQuestion()] })
-  const removeQuestion = (i = q) => onQuestionsUpdate({ ...state, questions: questions.filter((_, idx) => i !== idx) })
+  const addQuestion = () => onQuestionsUpdate({
+    ...state,
+    questions: [...questions, createQuestion()]
+  })
+
+  const removeQuestion = (e: any) => {
+    onQuestionsUpdate({
+      ...state,
+      questions: questions.filter((_, idx) => q !== idx)
+    })
+  }
+
+  const actions = {
+    add: addQuestion,
+    remove: removeQuestion,
+  }
 
   useEffect(() => {
     setStatus(getStatus(question, q, questions, state))
@@ -84,11 +118,16 @@ export const QuestionWrapper = (props: QuestionProps) => {
 
   return (
     <li>
-      <div className="relative pb-8">
+      <div className="group relative py-4">
+        <div className="
+          absolute -inset-1 -inset-x-6 bg-transparent -z-10
+          group-hover:bg-gray-100 group-focus-within:bg-gray-100
+        " />
+
         <span className="absolute top-5 left-5 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true" />
-        {q !== questions.length - 1 ? (
+        {/* {q !== questions.length - 1 ? (
           <span className="absolute top-5 left-5 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true" />
-        ) : null}
+        ) : null} */}
         <div className="relative flex items-start space-x-3">
           <div className="relative px-1">
             <div className={
@@ -127,7 +166,7 @@ export const QuestionWrapper = (props: QuestionProps) => {
         </div>
         <Controls
           last={q === questions.length - 1}
-          onClickAdd={addQuestion}
+          actions={actions}
         />
       </div>
     </li>
@@ -155,19 +194,25 @@ export const QuestionList = ({ state, onQuestionsUpdate }: ListProps) => {
   }
 
   return (
-    <div className="border-t border-gray-200
-    pl-4 pr-6 pt-4 pb-4 sm:pl-6 lg:pl-8 xl:border-t-0 xl:pl-6 xl:pt-6 flow-root">
-      <ul role="list" className="-mb-8">
-        {state.questions.filter(filters[filterBy]).sort(sort[sortBy]).map((question, q) => (
-          <QuestionWrapper
-            key={question.uuid}
-            question={question}
-            index={q}
-            questions={state.questions}
-            state={state}
-            onQuestionsUpdate={onQuestionsUpdate}
-          />
-        ))}
+    <div className="
+      border-t border-gray-200
+      pl-4 pr-6 pt-4 pb-4 sm:pl-6 lg:pl-8 xl:border-t-0 xl:pl-6 xl:pt-6 flow-root
+    ">
+      <ul role="list" className="-mb-8 isolate">
+        {state.questions
+          .filter(filters[filterBy])
+          .sort(sort[sortBy])
+          .map((question, q) => (
+            <QuestionWrapper
+              key={question.uuid}
+              question={question}
+              index={q}
+              questions={state.questions}
+              state={state}
+              onQuestionsUpdate={onQuestionsUpdate}
+            />
+          ))
+        }
       </ul>
     </div>
   )

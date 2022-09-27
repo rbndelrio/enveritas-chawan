@@ -1,9 +1,17 @@
 import type { Question } from '@chawan/forms'
-import { ChatBubbleBottomCenterTextIcon, PlusSmallIcon, QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
+import {
+  ArchiveBoxXMarkIcon, ChatBubbleBottomCenterTextIcon,
+  PlusIcon as HPlusIcon,
+  QuestionMarkCircleIcon
+} from '@heroicons/react/20/solid'
 
 
 export const PlusIcon = () => {
-  return (<PlusSmallIcon className="h-5 w-5" aria-hidden="true" />)
+  return (<HPlusIcon className="h-5 w-5" aria-hidden="true" />)
+}
+
+export const RemoveIcon = () => {
+  return (<ArchiveBoxXMarkIcon className="h-5 w-5" aria-hidden="true" />)
 }
 
 
