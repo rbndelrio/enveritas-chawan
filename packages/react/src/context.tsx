@@ -35,8 +35,6 @@ const UserFormContextProvider = ({ children }: PropsWithChildren) => {
 
   useEffect(() => {
     const fetchUserState = () => {
-      // this would usually be your own backend, or localStorage
-      // for example
       new Promise<UserStateContext>((resolve) => { setTimeout(() => resolve(defaultCtx), 500) })
         .then((result) => setUserState(result))
         .catch((error) => console.log('Somehow failed to set user state'));
@@ -46,7 +44,6 @@ const UserFormContextProvider = ({ children }: PropsWithChildren) => {
   }, []);
 
   return (
-    // the Provider gives access to the context to its children
     <UserFormContext.Provider value={userState}>
       {children}
     </UserFormContext.Provider>
