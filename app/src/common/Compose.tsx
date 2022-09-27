@@ -9,7 +9,7 @@ interface ComposeProps {
   children: React.ReactNode
 }
 // Special thanks to: https://github.com/devhubapp/devhub
-export function Compose(props: ComposeProps) {
+const Compose = (props: ComposeProps) => {
   const { components = [], children } = props
 
   return (
@@ -21,3 +21,5 @@ export function Compose(props: ComposeProps) {
     </>
   )
 }
+
+export { Compose };
