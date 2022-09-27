@@ -11,6 +11,7 @@ module.exports = {
       colors: {
         enveritas: {
           700: '#2e8b57',
+          600: '#35a064',
           500: '#44c17b',
         },
         jebena: {
