@@ -1,3 +1,4 @@
+import { Transition } from '@headlessui/react';
 import { Outlet } from "react-router-dom";
 import { Details } from '../layout/Details';
 import { Info } from '../layout/Info';
@@ -29,7 +30,20 @@ export const Root = () => {
 
       detail={<Details />}
     >
-      <Outlet />
+      <Transition
+        appear={true}
+        show={true}
+        as={'div'}
+        className=""
+        enter="transition duration-150"
+        enterFrom="opacity-0"
+        enterTo="opacity-100"
+        leave="transition duration-200"
+        leaveFrom="opacity-100"
+        leaveTo="opacity-0"
+      >
+        <Outlet />
+      </Transition>
     </Shell>
   )
 }
