@@ -3,9 +3,7 @@ import { useEffect, useState } from 'react'
 import type { Question, QuestionVersion } from '@chawan/forms'
 import { createQuestion, createQuestionVersion } from '@chawan/forms'
 import { Transition } from '@headlessui/react'
-import { Answer as A } from './Answer'
 import { PlusIcon, RemoveIcon, TypedIcon } from './Icon'
-import { Single as Q } from './Single'
 
 import Editor from './Edit'
 
@@ -16,7 +14,6 @@ type QuestionListState = {
 
 type Status = 'good' | 'normal' | 'warn' | 'alert'
 type QuestionStatus = [Status, string]
-
 const getStatus = (
   question: Question,
   _index: number,
@@ -92,8 +89,37 @@ interface QuestionProps extends ListProps {
   question: Question
   questions: Question[]
   state: QuestionListState
+  onQuestionsUpdate: React.Dispatch<React.SetStateAction<QuestionListState>>
 }
 export const QuestionWrapper = (props: QuestionProps) => {
+  // TODO: Convert to reducers
+  /*
+  const initialValue = {
+    question: '',
+    questionVersions: [],
+    type: '',
+    payload: '',
+  };
+
+  const reducer = (state, action) => {
+    switch (action.type) {
+      case 'update':
+        return {
+          ...state,
+          [action.payload.key]: action.payload.value,
+        };
+      default:
+        throw new Error(`Unknown action type: ${action.type}`);
+    }
+  };
+  const inputAction = (event) => {
+    dispatch({
+      type: 'update',
+      payload: { key: event.target.name, value: event.target.value },
+    });
+  };
+  */
+
   const { question, index: q, questions, state, onQuestionsUpdate } = props
   const [[status, statusMessage], setStatus] = useState<[Status, string]>(['normal', ''])
   const MOOD_RING = {
@@ -103,6 +129,7 @@ export const QuestionWrapper = (props: QuestionProps) => {
     alert: 'text-enveritas-700',
   }
 
+  // FIXME: This logic should probably be further up the tree
   const addQuestion = () => {
     const newQuestion = createQuestion({ typ: question.typ })
     const newVersion = createQuestionVersion({}, newQuestion, {
@@ -113,6 +140,12 @@ export const QuestionWrapper = (props: QuestionProps) => {
     onQuestionsUpdate({ ...state, questions: [...questions, newQuestion]})
   }
 
+  const setQuestionState = (questionInput: Question) => {
+    const newQuestions = questions.slice(0)
+    newQuestions[q] = questionInput
+    return onQuestionsUpdate({...state, questions: newQuestions })
+  }
+
   const removeQuestion = () => {
     onQuestionsUpdate({
       ...state,
@@ -120,13 +153,13 @@ export const QuestionWrapper = (props: QuestionProps) => {
     })
   }
 
-
-  const [showEditor, setEditorVisibility] = useState<Boolean>(false)
+  const [showEditor, setEditorVisibility] = useState<Boolean>(true)
   const revealEditor = () => { setEditorVisibility(true) }
   const toggleEditor = () => { setEditorVisibility(!showEditor) }
 
 
   const [activeQuestionVersion, setActiveQuestionVersion] = useState<QuestionVersion | null>(null)
+
   const resetActiveQuestionVersion = () => {
     setActiveQuestionVersion(
       inferActiveQuestionVersion(question)
@@ -152,10 +185,14 @@ export const QuestionWrapper = (props: QuestionProps) => {
           transition
         " />
 
-        <span className="absolute top-5 left-5 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true" />
-        {/* {q !== questions.length - 1 ? (
-          <span className="absolute top-5 left-5 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true" />
-        ) : null} */}
+        {/* Invisible hitbox */}
+        <div className="absolute inset-0" onClick={toggleEditor} />
+
+        <span
+          className="absolute top-5 left-5 -ml-px h-full w-0.5 bg-gray-200"
+          aria-hidden="true"
+        />
+
         <div
           className="relative flex items-start space-x-3"
           onClick={toggleEditor}
@@ -173,12 +210,8 @@ export const QuestionWrapper = (props: QuestionProps) => {
                 aria-hidden="true"
               />
             </div>
-
-            <span className="absolute -bottom-0.5 -right-1 rounded-tl bg-white px-0.5 py-px">
-              {/* <ChatBubbleLeftEllipsisIcon className="h-5 w-5 text-gray-400" aria-hidden="true" /> */}
-            </span>
           </div>
-          <div className="min-w-0 flex-1">
+          <div className={ `cursor-default min-w-0 flex-1 transition ${ !showEditor ? 'opacity-100' : 'opacity-0' }` }>
             <div>
               <div className="text-sm">
                 <div className="font-medium text-gray-900">
@@ -191,25 +224,27 @@ export const QuestionWrapper = (props: QuestionProps) => {
               <p>{question.lang}</p>
             </div>
           </div>
-          <Q {...props}></Q>
-          <A {...props}></A>
         </div>
 
 
         {/* Question Editor */}
         <Transition
           appear={true}
-          show={!showEditor}
+          show={showEditor}
           as={'div'}
-          className="relative z-100 bg-white mx-8 ml-12 -mt-10 top-0"
-          enter="transition-opacity duration-75"
+          className="relative z-10 bg-white mx-8 ml-12 -mt-10 top-0 transform"
+          enter="transition duration-150 translate-y-4"
           enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="transition-opacity duration-150"
-          leaveFrom="opacity-100"
+          enterTo="opacity-100 translate-y-0"
+          leave="transition duration-200"
+          leaveFrom="opacity-100 translate-y-0"
           leaveTo="opacity-0"
         >
-          <Editor />
+          <Editor
+            editorState={[showEditor, setEditorVisibility]}
+            questionState={[question, setQuestionState]}
+            versionState={[activeQuestionVersion, setActiveQuestionVersion, resetActiveQuestionVersion]}
+          />
         </Transition>
 
 
