@@ -79,7 +79,7 @@ function MyRadioGroup() {
 
 type StateProp<T, U = React.Dispatch<React.SetStateAction<T>>> = [T, U, (() => void)?]
 interface EditorProps {
-  editorState: StateProp<Boolean>
+  editorState: StateProp<boolean>
   questionState: StateProp<Question, (q: Question) => void>
   versionState: StateProp<QuestionVersion | null>
 }

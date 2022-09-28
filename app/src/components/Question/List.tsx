@@ -153,7 +153,7 @@ export const QuestionWrapper = (props: QuestionProps) => {
     })
   }
 
-  const [showEditor, setEditorVisibility] = useState<Boolean>(true)
+  const [showEditor, setEditorVisibility] = useState<boolean>(true)
   const revealEditor = () => { setEditorVisibility(true) }
   const toggleEditor = () => { setEditorVisibility(!showEditor) }
 
