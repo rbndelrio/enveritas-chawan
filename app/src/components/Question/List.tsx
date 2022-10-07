@@ -12,6 +12,21 @@ type QuestionListState = {
   lang: string
 }
 
+// FIXME: Find a better place for this
+export type QuestionData = {
+  title: string
+  type: string
+  choices?: string[]
+}
+const questions = [
+  'How many objects to you have?',
+  'Where are the beans?',
+  "Where can I get some good coffee around here?",
+  'Tell me about your farm'
+]
+const getRandomQuestion = () => questions[Math.floor(Math.random() * questions.length)];
+// /FIXME:
+
 type Status = 'good' | 'normal' | 'warn' | 'alert'
 type QuestionStatus = [Status, string]
 const getStatus = (
@@ -140,10 +155,22 @@ export const QuestionWrapper = (props: QuestionProps) => {
     onQuestionsUpdate({ ...state, questions: [...questions, newQuestion]})
   }
 
-  const setQuestionState = (questionInput: Question) => {
-    const newQuestions = questions.slice(0)
-    newQuestions[q] = questionInput
-    return onQuestionsUpdate({...state, questions: newQuestions })
+
+  const [questionData, setQuestionData] = useState<QuestionData>({
+    title: getRandomQuestion(),
+    type: 'text',
+  })
+  const setQuestionState = (questionDataInput: QuestionData) => {
+    setQuestionData(questionDataInput)
+  }
+  const setQuestionTitle = (title: QuestionData['title']) => {
+    setQuestionData({ ...questionData, title })
+  }
+  const setQuestionType = (type: QuestionData['type']) => {
+    setQuestionData({ ...questionData, type })
+  }
+  const setQuestionChoices = (choices: QuestionData['choices']) => {
+    setQuestionData({ ...questionData, choices })
   }
 
   const removeQuestion = () => {
@@ -242,8 +269,15 @@ export const QuestionWrapper = (props: QuestionProps) => {
         >
           <Editor
             editorState={[showEditor, setEditorVisibility]}
-            questionState={[question, setQuestionState]}
+            // questionState={[question, setQuestionState]}
             versionState={[activeQuestionVersion, setActiveQuestionVersion, resetActiveQuestionVersion]}
+            data={questionData}
+            actions={{
+              data: setQuestionState,
+              title: setQuestionTitle,
+              type: setQuestionType,
+              choices: setQuestionChoices,
+            }}
           />
         </Transition>
 

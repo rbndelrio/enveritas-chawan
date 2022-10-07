@@ -1,6 +1,7 @@
 import { Question, QuestionVersion } from '@chawan/forms'
 import { Listbox, RadioGroup, Transition } from '@headlessui/react'
 import { CalendarIcon, TagIcon, UserCircleIcon } from '@heroicons/react/20/solid'
+import { QuestionData } from './List'
 import { Fragment, useState } from 'react'
 
 // import { InputChip } from './InputChip'
@@ -39,14 +40,6 @@ const types = [
   { name: 'True/False', value: 'boolean' },
 ]
 
-const questions = [
-  'How many objects to you have?',
-  'Where are the beans?',
-  "Where can I get some good coffee around here?",
-  'Tell me about your farm'
-]
-const getRandomQuestion = () => questions[Math.floor(Math.random()*questions.length)];
-
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ')
 }
@@ -80,8 +73,10 @@ function MyRadioGroup() {
 type StateProp<T, U = React.Dispatch<React.SetStateAction<T>>> = [T, U, (() => void)?]
 interface EditorProps {
   editorState: StateProp<boolean>
-  questionState: StateProp<Question, (q: Question) => void>
+  questionState?: StateProp<Question, (q: Question) => void>
   versionState: StateProp<QuestionVersion | null>
+  actions: Record<string, any>
+  data: QuestionData
 }
 export default function Editor(props: EditorProps) {
   const setEditorVisibility = props?.editorState?.[1]
@@ -93,16 +88,29 @@ export default function Editor(props: EditorProps) {
   const [dated, setDated] = useState(dueDates[0])
 
 
-  const [questionTitle, setQuestionTitle] = useState<string>(getRandomQuestion())
-  const [questionDescription, setQuestionDescription] = useState<string>('')
+  const { data } = props
+  const {
+    data: setQuestionState,
+    title: setQuestionTitle,
+    type: setQuestionType,
+    choices: setQuestionChoices,
+  } = props.actions
 
-  const [type, setType] = useState<string>(types[0].value)
-  const [choices, setChoices] = useState<string[]>(['Option 1', 'Option 2'])
+  type QuestionData = {
+    title: string
+    type: string
+    choices: string[]
+  }
+  
+  // const [questionDescription, setQuestionDescription] = useState<string>('')
+  // const [questionTitle, setQuestionTitle] = useState<string>(getRandomQuestion())
+  // const [type, setType] = useState<string>(types[0].value)
+  // const [choices, setChoices] = useState<string[]>(['Option 1', 'Option 2'])
 
   const setChoice = (index: number, value: string) => {
-    const newChoices = choices.slice(0)
+    const newChoices = setQuestionChoices.slice(0)
     newChoices[index] = value
-    return setChoices(newChoices)
+    return setQuestionChoices(newChoices)
   }
 
   return (
@@ -120,7 +128,7 @@ export default function Editor(props: EditorProps) {
           id="title"
           className="block resize-none w-full border-0 pt-2.5 text-lg font-medium placeholder-gray-500 focus:ring-0"
           placeholder="Write your question here"
-          value={questionTitle}
+          value={data.title}
           onChange={(e) => setQuestionTitle(e.target.value)}
         />
 
@@ -130,8 +138,8 @@ export default function Editor(props: EditorProps) {
             name="title"
             id="title"
             className="block w-full border-0 pt-2.5 placeholder-gray-500 focus:ring-0"
-            value={type}
-            onChange={(e) => setType(e.target.value)}
+            value={data.type}
+            onChange={(e) => setQuestionType(e.target.value)}
             >
             {types.map((type, t) => (
               <option value={type.value} key={type.value || t}>{type.name}</option>
@@ -147,8 +155,8 @@ export default function Editor(props: EditorProps) {
             /> */}
 
             {
-              (type === 'select' || type === 'mselect') && <div className='flex flex-col space-y-2'>
-                {choices.map((choice, c) => (
+              (data.type === 'select' || data.type === 'mselect') && <div className='flex flex-col space-y-2'>
+                {data.choices?.map((choice, c) => (
                   <input
                     className="block w-full rounded-sm border p-1 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm placeholder-gray-500 focus:ring-0"
                     key={c}
