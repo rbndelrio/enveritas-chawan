@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 
 import type { Question, QuestionVersion } from '@chawan/forms'
-import { createQuestion, createQuestionVersion } from '@chawan/forms'
+import { createQuestion, createQuestionVersion, getLoopItem } from '@chawan/forms'
 import { Transition } from '@headlessui/react'
-import { PlusIcon, RemoveIcon, TypedIcon } from './Icon'
 
+import { QUESTIONS } from '../../data'
+import { PlusIcon, RemoveIcon, TypedIcon } from './Icon'
 import Editor from './Edit'
 
 type QuestionListState = {
@@ -18,13 +19,6 @@ export type QuestionData = {
   type: string
   choices?: string[]
 }
-const questions = [
-  'How many objects to you have?',
-  'Where are the beans?',
-  "Where can I get some good coffee around here?",
-  'Tell me about your farm'
-]
-const getRandomQuestion = () => questions[Math.floor(Math.random() * questions.length)];
 // /FIXME:
 
 type Status = 'good' | 'normal' | 'warn' | 'alert'
@@ -157,7 +151,7 @@ export const QuestionWrapper = (props: QuestionProps) => {
 
 
   const [questionData, setQuestionData] = useState<QuestionData>({
-    title: getRandomQuestion(),
+    title: getLoopItem(QUESTIONS, q),
     type: 'text',
   })
   const setQuestionState = (questionDataInput: QuestionData) => {
