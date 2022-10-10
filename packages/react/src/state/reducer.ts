@@ -38,13 +38,13 @@ export interface ListAction<T> extends Omit<Partial<ListState<T>>, 'data'> {
   data?: T | Array<T> // This should probably be renamed to payload
 }
 
-export const initialListState = <T = unknown>(): ListState<T> => ({
+export const initialListState = <T = unknown>(item?: T): ListState<T> => ({
   last: 'init',
   index: 0,
   active: 0,
   size: 1,
   order: [ 0 ],
-  data: { 0: undefined },
+  data: { 0: item },
 });
 
 export const getListItems = <T = unknown>({ order, data }: ListState<T>) =>
