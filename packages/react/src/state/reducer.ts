@@ -1,6 +1,6 @@
-interface ListState<T = unknown> {
+export interface ListState<T = unknown> {
   /** Last action performed */
-  last: ActionType | string
+  last: ListActionType | string
 
   /** Position of active item */
   index: number
@@ -19,7 +19,7 @@ interface ListState<T = unknown> {
 }
 
 // TODO: The typing here could be more intelligent by implementing a 2d tuple matrix
-type ActionType =
+export type ListActionType =
   // Replace global state
   'init' | 'import' |
 
@@ -32,9 +32,9 @@ type ActionType =
   // ¯\_(ツ)_/¯
   // string;
 
-interface ListAction<T> extends Omit<Partial<ListState<T>>, 'data'> {
+export interface ListAction<T> extends Omit<Partial<ListState<T>>, 'data'> {
   /** Action to perform */
-  type: ActionType | string
+  type: ListActionType | string
   data?: T | Array<T> // This should probably be renamed to payload
 }
 
@@ -60,6 +60,7 @@ export const getListItems = <T = unknown>({ order, data }: ListState<T>) =>
  * This opens the door for item grouping and _potentially_ nested list management
  *
  * TODO: add methods to remove items, revisit action/property nomenclature
+ * FIXME: T extending Array could cause bugs with certain actions
  *
  * @param action.type - Actions
  * * `init` - Reset to initial state
@@ -71,11 +72,10 @@ export const getListItems = <T = unknown>({ order, data }: ListState<T>) =>
  * * `add_item` - Add single item to list
  * * `add_items` - Add multiple items to list
  */
-export function listReducer<
-    T, // FIXME: T extending Array could cause bugs with certain actions
-    List extends ListState<T>,
-    Action extends ListAction<T>
-  >(state: List, action: Action): ListState<T> {
+export function listReducer<T = unknown>(
+  state: ListState<T>,
+  action: ListAction<T>
+): ListState<T> {
   const last = action.type
 
   switch (action.type) {
@@ -139,7 +139,7 @@ export function listReducer<
 
         data: {
           ...state.data,
-          [id]: action.data,
+          [id]: action.data as T,
         },
       };
     }
@@ -156,11 +156,11 @@ export function listReducer<
     }
     case 'add_item': {
       const id = state.size + 1
-      let index
-      let order
+      let index: number
+      let order: number[]
 
       if (Number.isInteger(action.index)) {
-        index = action.index
+        index = action.index || 0
         order = [
           ...state.order.slice(0, index),
           id,
@@ -180,7 +180,7 @@ export function listReducer<
         order,
         data: {
           ...state.data,
-          [id]: action.data,
+          [id]: action.data as T,
         },
       }
     }
