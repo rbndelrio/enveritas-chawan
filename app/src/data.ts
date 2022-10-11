@@ -1,10 +1,10 @@
 /** Static/Placeholder Data */
 
 export const QUESTIONS = [
-  'How many objects to you have?',
-  'Where are the beans?',
+  'How long have you been farming?',
+  'What was your annual revenue last year?',
   "Where can I get some good coffee around here?",
-  'Tell me about your farm'
+  'Tell me about your farm.'
 ]
 
 export const LANGUAGE_OPTIONS = [

@@ -1,13 +1,18 @@
-import React, { Fragment, useEffect, useState } from 'react';
+import React, { Fragment, MouseEventHandler, useEffect, useState } from 'react';
 
 import type { Question, QuestionVersion } from '@chawan/forms';
-// import { createQuestion, createQuestionVersion } from '@chawan/forms';
+import { getRandomItem } from '@chawan/forms';
 import { ListAction, ListState } from '@chawan/react';
 import { Transition } from '@headlessui/react';
 
 
+import { QUESTIONS } from '../../data';
 import { Editor } from './Edit';
 import { PlusIcon, RemoveIcon, TypedIcon } from './Icon';
+
+const classNames = (...classes: string[]) => classes.filter(Boolean).join(' ')
+
+type StateProp<T, U = React.Dispatch<React.SetStateAction<T>>> = [T, U, (() => void)?]
 
 type QuestionListInfo = {
   title: string
@@ -21,6 +26,8 @@ export type QuestionData = {
   choices?: string[]
 }
 
+type ListSelection = Array<string|number>
+
 interface ListProps {
   info: QuestionListInfo
   state: QuestionListState
@@ -28,6 +35,23 @@ interface ListProps {
 }
 export const QuestionList = (props: ListProps) => {
   const { state, dispatch } = props
+  const selection = {
+    items: useState<ListSelection>([]),
+    lastIndex: useState<number>(-1),
+  }
+
+  // const [shiftHeld, setShiftHeld] = useState(false);
+  // const down = ({key}: { key: string }) => { if (key === 'Shift') setShiftHeld(true) }
+  // const up = ({key}: { key: string }) => { if (key === 'Shift') setShiftHeld(false) }
+
+  // useEffect(() => {
+  //   window.addEventListener('keydown', down);
+  //   window.addEventListener('keyup', up);
+  //   return () => {
+  //     window.removeEventListener('keydown', down);
+  //     window.removeEventListener('keyup', up);
+  //   };
+  // }, []);
 
   /*
   // TODO: Actually implement sorting and filtering
@@ -69,6 +93,7 @@ export const QuestionList = (props: ListProps) => {
                 index={id}
                 state={state}
                 dispatch={dispatch}
+                selection={selection}
               />
             )
           })
@@ -162,7 +187,13 @@ interface QuestionProps extends ListProps {
   index: number
   question: QuestionData
   state: QuestionListState
+  selection: {
+    items: StateProp<ListSelection>
+    lastIndex: StateProp<number>
+  }
 }
+
+const getRandomQuestion = () => getRandomItem(QUESTIONS)
 export const QuestionWrapper = (props: QuestionProps) => {
   const {
     question,
@@ -177,35 +208,15 @@ export const QuestionWrapper = (props: QuestionProps) => {
   const [activeQuestionVersion, setActiveQuestionVersion] = useState<QuestionVersion | null>(null)
 
   const addQuestion = () => {
-    /*
-    const newQuestion = createQuestion({ typ: question.typ })
-    const newVersion = createQuestionVersion({}, newQuestion, {
-      val: 'Who are you?',
-      type: newQuestion.typ
-    })
-
-    newQuestion.versions.push(newVersion)
-    */
-
     dispatch({
       type: 'add_item',
       payload: {
-        title: '',
+        title: getRandomQuestion(),
         type: 'text',
         choices: [],
       }
     })
   }
-
-  // const setQuestion = (properties: Partial<QuestionData>) => {
-  //   dispatch({
-  //     type: 'set_data',
-  //     data: {
-  //       ...question,
-  //       ...properties,
-  //     }
-  //   })
-  // }
 
   const setQuestionData = (arg: Partial<QuestionData> | ((data: QuestionData) => QuestionData)) => {
     dispatch({
@@ -230,15 +241,59 @@ export const QuestionWrapper = (props: QuestionProps) => {
   //   )
   // }
 
+  // const getItemsBetween = (arr, ) => {
+
+  // }
+  const handleSelectionEvent: MouseEventHandler<HTMLElement> = e => {
+    e.stopPropagation()
+
+    const { order } = props.state
+    const [ state, setState ] = props.selection.items
+    const [ lastIndex, setLast ] = props.selection.lastIndex
+    const index = order.indexOf(q)
+
+    if (state.includes(q)) {
+      return setState(state.filter(id => id !== q))
+    }
+
+    const newState = [...state]
+    setLast(index)
+
+    // Select all items in range
+    if (e.shiftKey) {
+      let
+        f = Math.min(lastIndex, q),
+        t = Math.max(lastIndex, q)
+
+      console.log('shift', f, t, order)
+      order.slice(f, t).forEach(id => { if (!state.includes(id)) newState.push(id) })
+      return setState(newState)
+    }
+
+    newState.push(q)
+    console.log('push', q, index, newState)
+    return setState(newState)
+  }
+
 
   const actions = {
     add: addQuestion,
     remove: removeQuestion,
   }
 
+  const [highlight, setHighlight] = useState(false)
+
   useEffect(() => {
     setStatus(getStatus(question, state, info))
   }, [question, info.lang, q])
+
+  useEffect(() => {
+    console.log(
+      'setHighlight',
+      props.selection.items[0].includes(q)
+    )
+    setHighlight(props.selection.items[0].includes(q))
+  }, [props.selection.items[0], q])
 
 
   const MOOD_RING = {
@@ -251,17 +306,18 @@ export const QuestionWrapper = (props: QuestionProps) => {
   return (
     <li>
       <div className="group relative py-4">
-        <div className="
-          absolute -inset-1 -inset-x-6 bg-transparent -z-10
-          group-hover:bg-gray-100 group-focus-within:bg-gray-100
+        <div className={
+          `${highlight ? 'bg-gray-200' : 'bg-transparent group-hover:bg-gray-100 group-focus-within:bg-gray-100'}
+          absolute -inset-1 -inset-x-6 -z-10
           transition
-        " />
+          `
+        } />
 
         {/* Invisible hitbox */}
         <div className="absolute inset-0" onClick={toggleEditor} />
 
         <span
-          className="absolute top-5 left-5 -ml-px h-full w-0.5 bg-gray-200"
+          className="absolute top-5 left-5 -ml-px h-full w-0.5 bg-gray-300"
           aria-hidden="true"
         />
 
@@ -269,16 +325,24 @@ export const QuestionWrapper = (props: QuestionProps) => {
           className="relative flex items-start space-x-3"
           onClick={toggleEditor}
         >
-          <div className="relative px-1 user-select-none">
-            <div className={
-              MOOD_RING[status] +
-              ` relative flex h-8 w-8 items-center justify-center rounded-full
-              bg-white ring-4 cursor-grab -ring-offset-2 ring-current hover:ring-current ring-opacity-80
+          <div className="relative px-1 user-select-none" onClick={handleSelectionEvent}>
+            <div className={classNames(
+              MOOD_RING[status],
+              highlight ? 'bg-current' : 'bg-white',
+              `relative flex h-8 w-8 items-center justify-center rounded-full
+              outline-current outline-2
+              outline
+
+              ring-4 cursor-grab -ring-offset-3 ring-current hover:ring-current ring-opacity-80
               transition hover:ring-offset-2 hover:ring-8`
+              )
             }>
               <TypedIcon
                 typ={question.type}
-                className="h-5 w-5 text-current opacity-95"
+                className={classNames(
+                  'h-5 w-5 opacity-95',
+                  highlight ? 'text-white' : 'text-current',
+                )}
                 aria-hidden="true"
               />
             </div>
@@ -290,7 +354,9 @@ export const QuestionWrapper = (props: QuestionProps) => {
           }>
             <div>
               <div className="text-sm">
-                <div className="font-medium text-gray-900">
+                <div
+                  className={classNames("font-medium", highlight ? MOOD_RING[status] : 'text-gray-900')}
+                >
                   {question.title || `Question ${q + 1}`}
                 </div>
               </div>
