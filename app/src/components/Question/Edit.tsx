@@ -6,42 +6,11 @@ import { CalendarIcon, TagIcon, UserCircleIcon } from '@heroicons/react/20/solid
 // import { Question, QuestionVersion } from '@chawan/forms'
 // import { ListAction } from '@chawan/react';
 
+import { DUE_DATES, LABELS, USERS } from '../../data';
 import { QuestionData } from './List';
 
 // import { InputChip } from './InputChip'
 
-// TODO: Move placeholder data here
-// import {
-//   USERS,
-//   LABELS,
-//   DUE_DATES
-// } from '../../data'
-const assignees = [
-  { name: 'Unassigned', value: null },
-  {
-    name: 'Wade Cooper',
-    value: 'wade-cooper',
-    avatar: 'https://images.unsplash.com/photo-1491528323818-fdd1faba62cc?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-  },
-  {
-    name: 'Riau Team',
-    value: 'central-riau',
-  },
-  // More items...
-]
-const labels = [
-  { name: 'Unlabelled', value: null },
-  { name: 'Sample Frame', value: 'special' },
-  { name: 'A-B Trial', value: 'super-special' },
-  // More items...
-]
-const dueDates = [
-  { name: 'No due date', value: null },
-  { name: 'Today', value: 'today' },
-  { name: 'Pre-Seed', value: 'soon' },
-  { name: 'Post-Harvest', value: 'whenever' },
-  // More items...
-]
 
 const types = [
   { name: 'Text', value: 'text' },
@@ -50,10 +19,7 @@ const types = [
   { name: 'True/False', value: 'boolean' },
 ]
 
-function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(' ')
-}
-
+const classNames = (...classes: string[]) => classes.filter(Boolean).join(' ')
 
 function MyRadioGroup() {
   let [plan, setPlan] = useState('startup')
@@ -91,9 +57,9 @@ export function Editor(props: EditorProps) {
   const { data, setData } = props
   const setEditorVisibility = props?.editorState?.[1]
 
-  const [assigned, setAssigned] = useState(assignees[0])
-  const [labelled, setLabelled] = useState(labels[0])
-  const [dated, setDated] = useState(dueDates[0])
+  const [assigned, setAssigned] = useState(USERS[0])
+  const [labelled, setLabelled] = useState(LABELS[0])
+  const [dated, setDated] = useState(DUE_DATES[0])
 
   type QuestionData = {
     title: string
@@ -238,7 +204,7 @@ export function Editor(props: EditorProps) {
                         bg-white py-2 text-base shadow ring-1 ring-black ring-opacity-5
                         focus:outline-none sm:text-sm
                       ">
-                        {assignees.map((assignee) => (
+                        {USERS.map((assignee) => (
                           <Listbox.Option
                             key={assignee.value}
                             className={({ active }) =>
@@ -305,7 +271,7 @@ export function Editor(props: EditorProps) {
                         bg-white py-2 text-base shadow ring-1 ring-black ring-opacity-5
                         focus:outline-none sm:text-sm
                       ">
-                        {labels.map((label) => (
+                        {LABELS.map((label) => (
                           <Listbox.Option
                             key={label.value}
                             className={({ active }) =>
@@ -367,7 +333,7 @@ export function Editor(props: EditorProps) {
                         bg-white py-2 text-base shadow ring-1 ring-black ring-opacity-5
                         focus:outline-none sm:text-sm
                       ">
-                        {dueDates.map((dueDate) => (
+                        {DUE_DATES.map((dueDate) => (
                           <Listbox.Option
                             key={dueDate.value}
                             className={({ active }) =>
