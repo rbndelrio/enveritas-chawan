@@ -1,6 +1,6 @@
 import { FormEventHandler, Fragment, useState } from 'react';
 
-import { Listbox, RadioGroup, Transition } from '@headlessui/react';
+import { Listbox, Transition } from '@headlessui/react';
 import { CalendarIcon, TagIcon, UserCircleIcon } from '@heroicons/react/20/solid';
 
 // import { Question, QuestionVersion } from '@chawan/forms'
@@ -13,37 +13,13 @@ import { QuestionData } from './List';
 
 const classNames = (...classes: string[]) => classes.filter(Boolean).join(' ')
 
-function MyRadioGroup() {
-  let [plan, setPlan] = useState('startup')
-
-  return (
-    <RadioGroup value={plan} onChange={setPlan}>
-      <RadioGroup.Label>Plan</RadioGroup.Label>
-      <RadioGroup.Option value="startup">
-        {({ checked }) => (
-          <span className={checked ? 'bg-blue-200' : ''}>Startup</span>
-        )}
-      </RadioGroup.Option>
-      <RadioGroup.Option value="business">
-        {({ checked }) => (
-          <span className={checked ? 'bg-blue-200' : ''}>Business</span>
-        )}
-      </RadioGroup.Option>
-      <RadioGroup.Option value="enterprise">
-        {({ checked }) => (
-          <span className={checked ? 'bg-blue-200' : ''}>Enterprise</span>
-        )}
-      </RadioGroup.Option>
-    </RadioGroup>
-  )
-}
-
 type StateProp<T, U = React.Dispatch<React.SetStateAction<T>>> = [T, U, (() => void)?]
 interface Controls {
   editor: StateProp<boolean>
   label: StateProp<typeof LABELS[number]>
   assignee: StateProp<typeof USERS[number]>
   dueDate: StateProp<typeof DUE_DATES[number]>
+  type: StateProp<TypeOption>
 }
 
 interface EditorProps {
@@ -55,17 +31,19 @@ interface EditorProps {
 export function Editor(props: EditorProps) {
   const { data, setData } = props
 
+  const getType = (str: string): TypeOption => types.find(x => x.name === str) || types[0]
   const controls: Controls = {
     editor: props.editorState,
     label: useState(LABELS[0]),
     assignee: useState(USERS[0]),
     dueDate: useState(DUE_DATES[0]),
+    type: useState(getType(data.type))
   }
 
-  type QuestionData = {
-    title: string
-    type: string
-    choices?: string[]
+  const [type, setTypeComponent] = controls.type
+  const setType = (type: TypeOption) => {
+    setTypeComponent(type)
+    setData({ type: type.value })
   }
 
   const setChoice = (index: number, value: string) => {
@@ -89,11 +67,11 @@ export function Editor(props: EditorProps) {
 
         {/* TODO: Replace this with a proper UI component */}
         <div className="border-t border-gray-200">
-          <TypeInput
-            value={data.type}
-            onChange={(e) => setData({ type: e.currentTarget.value })}
+          <FancyTypeInput
+            value={type}
+            options={types}
+            onChange={setType}
           />
-          <MyRadioGroup />
           <div className="p-2">
             {
               (data.type === 'select' || data.type === 'mselect') && <div className='flex flex-col space-y-2'>
@@ -102,7 +80,7 @@ export function Editor(props: EditorProps) {
                     className="
                       block w-full rounded-sm border p-1 sm:text-sm
                       border-gray-300 shadow-sm
-                      focus:border-indigo-500 focus:ring-indigo-500
+                      focus:border-jebena-500 focus:ring-jebena-500
                       placeholder-gray-500 focus:ring-0
                     "
                     key={c}
@@ -116,7 +94,7 @@ export function Editor(props: EditorProps) {
                   className="
                     block w-full rounded-sm border p-1 sm:text-sm
                     border-gray-300 shadow-sm
-                    focus:border-indigo-500 focus:ring-indigo-500
+                    focus:border-jebena-500 focus:ring-jebena-500
                     placeholder-gray-500 focus:ring-0
                   "
                   key={data.choices?.length || 0}
@@ -182,12 +160,113 @@ const QuestionInput = ({ value, onChange }: Input<string, HTMLTextAreaElement>) 
   </>
 )
 
+type TypeOption = typeof types[number]
 const types = [
   { name: 'Text', value: 'text' },
   { name: 'Choice', value: 'select' },
   { name: 'Multiple Choice', value: 'mselect' },
   { name: 'True/False', value: 'boolean' },
+  { name: 'GPS Location', value: 'gps', disabled: true },
 ]
+
+interface FancyInput<T> {
+  value: T
+  onChange: (value: T) => void
+  options?: T[]
+}
+const FancyTypeInput = ({ value, options, onChange }: FancyInput<TypeOption>) => (
+  <Listbox value={value} onChange={(value) => onChange(value)}>
+    {({ open }) => (
+      <div className="mt-3 px-2">
+        <Listbox.Button
+          className="
+            relative w-full cursor-default rounded-md
+            py-2 pl-3 pr-10 text-left shadow-sm
+            border border-gray-300 bg-white
+            focus:border-jebena-500 focus:outline-none focus:ring-1 focus:ring-jebena-500
+            sm:text-sm
+          "
+        >
+          <span className="flex items-center">
+            <span
+              aria-label={true ? 'Online' : 'Offline'}
+              className={classNames(
+                true ? 'bg-green-400' : 'bg-gray-200',
+                'inline-block h-2 w-2 flex-shrink-0 rounded-full'
+              )}
+            />
+            <span className="ml-3 block truncate">{value.name}</span>
+          </span>
+          <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+            {/* <ChevronUpDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" /> */}
+          </span>
+        </Listbox.Button>
+        <Transition
+          show={open}
+          as={Fragment}
+          leave="transition ease-in duration-100"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+        >
+          <Listbox.Options
+            className="
+              absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md
+              bg-white py-1 text-base shadow-lg
+              ring-1 ring-black ring-opacity-5 focus:outline-none
+              sm:text-sm
+            "
+          >
+            {(options || types).map((opt) => (
+              <Listbox.Option
+                key={opt.value}
+                value={opt}
+                disabled={!opt.value || !!opt.disabled}
+                className={({ active }) =>
+                  classNames(
+                    active ? 'text-white bg-jebena-700' : 'text-gray-900',
+                    'relative cursor-default select-none py-2 pl-3 pr-9'
+                  )
+                }
+              >
+                {({ selected, active }) => (
+                  <>
+                    <div className="flex items-center">
+                      {/* TODO: Replace this indicator with an actual icon */}
+                      <span
+                        className={classNames(
+                          true ? 'bg-enveritas-500' : 'bg-gray-200',
+                          'inline-block h-2 w-2 flex-shrink-0 rounded-full'
+                        )}
+                        aria-hidden="true"
+                      />
+                      <span
+                        className={classNames(selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate')}
+                      >
+                        {opt.name}
+                        <span className="sr-only"> is {true ? 'online' : 'offline'}</span>
+                      </span>
+                    </div>
+
+                    {selected ? (
+                      <span
+                        className={classNames(
+                          active ? 'text-white' : 'text-jebena-700',
+                          'absolute inset-y-0 right-0 flex items-center pr-4'
+                        )}
+                      >
+                        {/* <CheckIcon className="h-5 w-5" aria-hidden="true" /> */}
+                      </span>
+                    ) : null}
+                  </>
+                )}
+              </Listbox.Option>
+            ))}
+          </Listbox.Options>
+        </Transition>
+      </div>
+    )}
+  </Listbox>
+)
 const TypeInput = ({ value, onChange }: Input<string, HTMLSelectElement>) => (
   <select
     name="title"
