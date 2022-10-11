@@ -21,18 +21,18 @@ const EDIT_STATUSES = [ 'draft', 'review' ]
 
 const classNames = (...classes: string[]) => classes.filter(Boolean).join(' ')
 
-export const ProjectList = (props: Props) => {
-  const projects = props.projects.data
+export const ProjectList = ({ projects }: Props) => {
+  const data = projects.data
 
   return (
     <ul
       role="list"
       className="divide-y divide-gray-200 border-b border-gray-200"
     >
-      {props.projects.order.map((id, i) => {
-        const project = projects[id]
+      {projects.order.map((id, i) => {
+        const project = data[id]
 
-        if (!project) return <Fragment key={id}></Fragment>
+        if (!project) return <Fragment key={id} />
 
         return (
           <li

@@ -32,10 +32,12 @@ export type ListActionType =
   // ¯\_(ツ)_/¯
   // string;
 
-export interface ListAction<T> extends Omit<Partial<ListState<T>>, 'data'> {
+export interface ListAction<T> {
   /** Action to perform */
-  type: ListActionType | string
-  data?: T | Array<T> // This should probably be renamed to payload
+  type: ListActionType
+  payload?: T | Array<T>
+  index?: number
+  id?: number
 }
 
 export const initialListState = <T = unknown>(item?: T): ListState<T> => ({
@@ -77,15 +79,16 @@ export function listReducer<T = unknown>(
   action: ListAction<T>
 ): ListState<T> {
   const last = action.type
+  // console.log(action)
 
   switch (action.type) {
     case 'init': {
       return initialListState();
     }
     case 'import': {
-      if (!(Array.isArray(action.data) && action.data.length)) return initialListState()
+      if (!(Array.isArray(action.payload) && action.payload.length)) return initialListState()
 
-      const length = action.data.length
+      const length = action.payload.length
 
       const order = Array.from<any>({ length }) // This optimization will save like 5 nanoseconds 🏎💨
       const newState: ListState<T> = {
@@ -98,7 +101,7 @@ export function listReducer<T = unknown>(
       }
 
       for (let i = 0; i < length; i++) {
-        const item = action.data[i];
+        const item = action.payload[i];
         newState.order[i] = i
         newState.data[i] = item
       }
@@ -106,7 +109,7 @@ export function listReducer<T = unknown>(
       return newState
     }
     case 'set_active': {
-      const id = Math.min(Math.max(action.active ?? 0, 0), state.size - 1)
+      const id = Math.min(Math.max(action.id ?? 0, 0), state.size - 1)
       return {
         ...state,
         last,
@@ -131,7 +134,7 @@ export function listReducer<T = unknown>(
       }
     }
     case 'set_data': {
-      const id = Math.max(0, state.active ?? state.order.length)
+      const id = Math.max(0, action.id ?? state.active ?? state.order.length)
 
       return {
         ...state,
@@ -139,7 +142,7 @@ export function listReducer<T = unknown>(
 
         data: {
           ...state.data,
-          [id]: action.data as T,
+          [id]: action.payload as T,
         },
       };
     }
@@ -150,7 +153,7 @@ export function listReducer<T = unknown>(
 
         data: {
           ...state.data,
-          [state.active]: undefined,
+          [action.id ?? state.active]: undefined,
         },
       };
     }
@@ -180,7 +183,7 @@ export function listReducer<T = unknown>(
         order,
         data: {
           ...state.data,
-          [id]: action.data as T,
+          [id]: action.payload as T,
         },
       }
     }
@@ -188,8 +191,8 @@ export function listReducer<T = unknown>(
       let size = state.size
 
       // Coerce data into an Item array
-      const items = Array.isArray(action.data) && action.data.length
-        ? action.data
+      const items = Array.isArray(action.payload) && action.payload.length
+        ? action.payload
         : []
 
       // Incrementing indices based on previous state's size
