@@ -1,4 +1,4 @@
-import { FormEventHandler, Fragment, useState } from 'react';
+import { FormEventHandler, Fragment, useRef, useState } from 'react';
 
 import { Listbox, Transition } from '@headlessui/react';
 import { CalendarIcon, TagIcon, UserCircleIcon } from '@heroicons/react/20/solid';
@@ -48,10 +48,23 @@ export function Editor(props: EditorProps) {
 
   const setChoice = (index: number, value: string) => {
     const choices = [...data.choices || []]
-    if (value) {
-      choices[index] = value
-    }
+    choices[index] = value
     setData({ choices })
+  }
+
+  const removeChoice = (index: number) => {
+    const choices = [...data.choices || []]
+    choices.splice(index, 1)
+    setData({ choices })
+  }
+
+  const choices = useRef<HTMLInputElement>(null);
+  const focusChoice = (i: number) => {
+    setTimeout(() => choices.current?.focus())
+  }
+  const handlePlaceholderFocus = () => {
+    setChoice(data.choices?.length || 0, '');
+    focusChoice((data.choices?.length || 1) - 1)
   }
 
   return (
@@ -75,33 +88,44 @@ export function Editor(props: EditorProps) {
           <div className="p-2">
             {
               (data.type === 'select' || data.type === 'mselect') && <div className='flex flex-col space-y-2'>
-                {data.choices?.map((choice, c) => (
+                <>
+                  {data.choices?.map((choice, c) => (
+                    <input
+                      className="
+                        block w-full rounded-sm border-1 p-1 sm:text-sm
+                        border-gray-300 shadow-sm
+                        focus:border-jebena-300 focus:ring-jebena-300
+                        placeholder-gray-500 focus:ring-0
+                      "
+                      ref={choices}
+                      key={c}
+                      value={choice}
+                      placeholder="Choice"
+                      onChange={(e) => setChoice(c, e.currentTarget.value)}
+                      onBlur={(e) => {
+                        if (!e.currentTarget.value) {
+                          removeChoice(c)
+                          focusChoice(c)
+                        }
+                      }}
+                    />
+                  ))}
+
                   <input
                     className="
-                      block w-full rounded-sm border p-1 sm:text-sm
+                      block w-full rounded-sm border-1 p-1 sm:text-sm
                       border-gray-300 shadow-sm
-                      focus:border-jebena-500 focus:ring-jebena-500
+                      focus:border-jebena-300 focus:ring-jebena-300
                       placeholder-gray-500 focus:ring-0
                     "
-                    key={c}
-                    value={choice}
+                    key={data.choices?.length || 0}
+                    value={''}
                     placeholder="Choice"
-                    onChange={(e) => setChoice(c, e.currentTarget.value)}
+                    onClick={handlePlaceholderFocus}
+                    onChange={handlePlaceholderFocus}
+                    onFocus={handlePlaceholderFocus}
                   />
-                ))}
-
-                <input
-                  className="
-                    block w-full rounded-sm border p-1 sm:text-sm
-                    border-gray-300 shadow-sm
-                    focus:border-jebena-500 focus:ring-jebena-500
-                    placeholder-gray-500 focus:ring-0
-                  "
-                  key={data.choices?.length || 0}
-                  value={''}
-                  placeholder="Choice"
-                  onChange={(e) => setChoice(data.choices?.length || 0, e.currentTarget.value)}
-                />
+                </>
               </div>
             }
           </div>
@@ -160,7 +184,6 @@ const QuestionInput = ({ value, onChange }: Input<string, HTMLTextAreaElement>) 
   </>
 )
 
-type TypeOption = typeof types[number]
 const types = [
   { name: 'Text', value: 'text' },
   { name: 'Choice', value: 'select' },
@@ -168,7 +191,7 @@ const types = [
   { name: 'True/False', value: 'boolean' },
   { name: 'GPS Location', value: 'gps', disabled: true },
 ]
-
+type TypeOption = typeof types[number]
 interface FancyInput<T> {
   value: T
   onChange: (value: T) => void
@@ -189,9 +212,9 @@ const FancyTypeInput = ({ value, options, onChange }: FancyInput<TypeOption>) =>
         >
           <span className="flex items-center">
             <span
-              aria-label={true ? 'Online' : 'Offline'}
+              aria-label={!value.disabled ? 'Enabled' : 'Disabled'}
               className={classNames(
-                true ? 'bg-green-400' : 'bg-gray-200',
+                !value.disabled ? 'bg-green-400' : 'bg-gray-200',
                 'inline-block h-2 w-2 flex-shrink-0 rounded-full'
               )}
             />
@@ -228,13 +251,13 @@ const FancyTypeInput = ({ value, options, onChange }: FancyInput<TypeOption>) =>
                   )
                 }
               >
-                {({ selected, active }) => (
+                {({ selected, active, disabled }) => (
                   <>
                     <div className="flex items-center">
                       {/* TODO: Replace this indicator with an actual icon */}
                       <span
                         className={classNames(
-                          true ? 'bg-enveritas-500' : 'bg-gray-200',
+                          !disabled ? 'bg-enveritas-500' : 'bg-gray-200',
                           'inline-block h-2 w-2 flex-shrink-0 rounded-full'
                         )}
                         aria-hidden="true"
@@ -243,7 +266,7 @@ const FancyTypeInput = ({ value, options, onChange }: FancyInput<TypeOption>) =>
                         className={classNames(selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate')}
                       >
                         {opt.name}
-                        <span className="sr-only"> is {true ? 'online' : 'offline'}</span>
+                        <span className="sr-only"> is {!disabled ? 'enabled' : 'coming soon'}</span>
                       </span>
                     </div>
 
