@@ -6,7 +6,7 @@ import { ListAction, ListState } from '@chawan/react';
 import { Transition } from '@headlessui/react';
 
 
-import { QUESTIONS } from '../../data';
+import { QUESTIONS, TYPES } from '../../data';
 import { Editor } from './Edit';
 import { PlusIcon, RemoveIcon, TypedIcon } from './Icon';
 
@@ -333,7 +333,7 @@ export const QuestionWrapper = (props: QuestionProps) => {
               outline-current outline-2
               outline
 
-              ring-4 cursor-grab -ring-offset-3 ring-current hover:ring-current ring-opacity-80
+              ring-4 cursor-default -ring-offset-3 ring-current hover:ring-current ring-opacity-80
               transition hover:ring-offset-2 hover:ring-8`
               )
             }>
@@ -348,7 +348,7 @@ export const QuestionWrapper = (props: QuestionProps) => {
             </div>
           </div>
           <div className={
-            `cursor-default min-w-0 flex-1 transition ${
+            `cursor-default active:cursor-grab min-w-0 flex-1 transition select-none ${
               !showEditor ? 'opacity-100' : 'opacity-0'
             }`
           }>
@@ -363,7 +363,9 @@ export const QuestionWrapper = (props: QuestionProps) => {
               {/* <p className="mt-0.5 text-sm text-gray-500">{formatDate(question.modified_on)}</p> */}
             </div>
             <div className="mt-2 text-xs text-gray-700">
-              <p>{info.lang}</p>
+              <p>{
+                TYPES.find(type => type.value === question.type || 'text')?.name || ''
+              }</p>
             </div>
           </div>
         </div>

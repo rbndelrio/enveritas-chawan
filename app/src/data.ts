@@ -41,3 +41,11 @@ export const DUE_DATES = [
   { name: 'Post-Harvest', value: 'whenever' },
   // More items...
 ]
+
+export const TYPES = [
+  { name: 'Text', value: 'text' },
+  { name: 'Choice', value: 'select' },
+  { name: 'Multiple Choice', value: 'mselect' },
+  { name: 'True/False', value: 'boolean' },
+  { name: 'GPS Location', value: 'gps', disabled: true },
+]

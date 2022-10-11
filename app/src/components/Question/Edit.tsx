@@ -1,4 +1,4 @@
-import { FormEventHandler, Fragment, useRef, useState } from 'react';
+import { FormEventHandler, Fragment, useEffect, useRef, useState } from 'react';
 
 import { Listbox, Transition } from '@headlessui/react';
 import { CalendarIcon, TagIcon, UserCircleIcon } from '@heroicons/react/20/solid';
@@ -6,7 +6,7 @@ import { CalendarIcon, TagIcon, UserCircleIcon } from '@heroicons/react/20/solid
 // import { Question, QuestionVersion } from '@chawan/forms'
 // import { ListAction } from '@chawan/react';
 
-import { DUE_DATES, LABELS, USERS } from '../../data';
+import { DUE_DATES, LABELS, TYPES, USERS } from '../../data';
 import { QuestionData } from './List';
 
 // import { InputChip } from './InputChip'
@@ -31,7 +31,7 @@ interface EditorProps {
 export function Editor(props: EditorProps) {
   const { data, setData } = props
 
-  const getType = (str: string): TypeOption => types.find(x => x.name === str) || types[0]
+  const getType = (str: string): TypeOption => TYPES.find(x => x.name === str) || TYPES[0]
   const controls: Controls = {
     editor: props.editorState,
     label: useState(LABELS[0]),
@@ -68,6 +68,11 @@ export function Editor(props: EditorProps) {
     focusChoice((data.choices?.length || 1) - 1)
   }
 
+  useEffect(() => {
+    console.log(getType(data.type))
+    // controls.type[1](data.type)
+  }, [data.type])
+
   return (
     <div className="relative bg-white">
       <div className="
@@ -83,7 +88,7 @@ export function Editor(props: EditorProps) {
         <div className="border-t border-gray-200">
           <FancyTypeInput
             value={type}
-            options={types}
+            options={TYPES}
             onChange={setType}
           />
           <div className="p-2">
@@ -185,14 +190,7 @@ const QuestionInput = ({ value, onChange }: Input<string, HTMLTextAreaElement>) 
   </>
 )
 
-const types = [
-  { name: 'Text', value: 'text' },
-  { name: 'Choice', value: 'select' },
-  { name: 'Multiple Choice', value: 'mselect' },
-  { name: 'True/False', value: 'boolean' },
-  { name: 'GPS Location', value: 'gps', disabled: true },
-]
-type TypeOption = typeof types[number]
+type TypeOption = typeof TYPES[number]
 interface FancyInput<T> {
   value: T
   onChange: (value: T) => void
@@ -240,7 +238,7 @@ const FancyTypeInput = ({ value, options, onChange }: FancyInput<TypeOption>) =>
               sm:text-sm
             "
           >
-            {(options || types).map((opt) => (
+            {(options || TYPES).map((opt) => (
               <Listbox.Option
                 key={opt.value}
                 value={opt}
@@ -299,7 +297,7 @@ const TypeInput = ({ value, onChange }: Input<string, HTMLSelectElement>) => (
     value={value}
     onChange={onChange}
   >
-    {types.map((type, t) => (
+    {TYPES.map((type, t) => (
       <option value={type.value} key={type.value || t}>{type.name}</option>
     ))}
   </select>
