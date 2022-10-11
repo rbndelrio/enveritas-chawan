@@ -20,7 +20,7 @@ export const Projects = () => {
   useEffect(() => {
     const fetchUserState = () => {
       new Promise<ProjectWithStatus[]>((resolve) => { setTimeout(() => resolve(projectCache), 5) })
-        .then((data) => dispatch({ type: 'import', data }))
+        .then((payload) => dispatch({ type: 'import', payload }))
         .catch((error) => console.log('Somehow failed to set state'));
     };
 
