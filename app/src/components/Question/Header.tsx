@@ -1,17 +1,15 @@
 import { Menu } from '@headlessui/react'
 import { ChevronDownIcon, GlobeEuropeAfricaIcon } from '@heroicons/react/20/solid'
 
-import { Question } from '@chawan/forms'
-
+import { LANGUAGE_OPTIONS } from '../../data'
 
 type QuestionListState = {
-  questions: Array<Question>
+  title: string
   lang: string
 }
-
 interface Props {
-  state: QuestionListState
-  onQuestionsUpdate: React.Dispatch<React.SetStateAction<QuestionListState>>
+  info: QuestionListState
+  onInfoUpdate: React.Dispatch<React.SetStateAction<QuestionListState>>
 }
 export const QuestionHeader = (props: Props) => {
   return (
@@ -28,18 +26,10 @@ export const QuestionHeader = (props: Props) => {
 }
 export default QuestionHeader
 
-
-const LANGUAGE_OPTIONS = [
-  { lang: 'en-US', name: 'English (U.S.)' },
-  { lang: 'pt-BR', name: 'Portuguese (Brazil)' },
-  { lang: 'jv-ID', name: 'Javanese (Indonesia)' },
-  { lang: 'rw-RW', name: 'Kinyarwanda (Rwanda)' },
-]
-
-const QuestionControls = ({ state, onQuestionsUpdate }: Props) => {
+const QuestionControls = ({ info, onInfoUpdate }: Props) => {
   const classNames = (...classes: string[]) => classes.filter(Boolean).join(' ')
 
-  const setLanguage = (lang: string) => onQuestionsUpdate({ ...state, lang })
+  const setLanguage = (lang: string) => onInfoUpdate({ ...info, lang })
 
   return (
     <Menu as="div" className="relative">
@@ -62,7 +52,7 @@ const QuestionControls = ({ state, onQuestionsUpdate }: Props) => {
               {({ active }) => (
                 <button
                   className={classNames(
-                    active || state.lang === lang ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
+                    active || info.lang === lang ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
                     'block w-full text-left px-4 py-2 text-sm'
                   )}
                   onClick={() => setLanguage(lang)}

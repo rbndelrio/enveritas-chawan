@@ -1,38 +1,37 @@
-import { useEffect, useState } from 'react';
-import { useParams } from 'react-router';
+import { useReducer, useState } from 'react';
+// import { useParams } from 'react-router';
 
-import { createQuestion, Question } from '@chawan/forms';
-import QuestionHeader from '../components/Question/Header';
-import QuestionList from '../components/Question/List';
+// import { createQuestion, Question } from '@chawan/forms';
+import { initialListState, listReducer } from '@chawan/react';
+import { QuestionHeader } from '../components/Question/Header';
+import { QuestionData, QuestionList } from '../components/Question/List';
 
-type QuestionListState = {
+type QuestionInfo = {
+  title: string
   lang: string
-  questions: Array<Question>
 }
 export const Editor = () => {
-  const { uuid } = useParams<'uuid'>()
-  const [questionState, setQuestionState] = useState<QuestionListState>({
-    lang: 'en-US',
-    questions: [createQuestion()],
-  })
-
-  useEffect(() => {
-    if (uuid) {
-      setQuestionState({lang: 'en-US', questions: [createQuestion()]})
-    }
-  }, [uuid])
+  const [info, setInfo] = useState<QuestionInfo>({ lang: 'en-US', title: '' })
+  const [listState, dispatchList] = useReducer(
+    listReducer<QuestionData>,
+    initialListState({
+      title: '',
+      type: 'text',
+      choices: [],
+     })
+  )
 
   return (
     <>
       <QuestionHeader
-        state={questionState}
-        onQuestionsUpdate={setQuestionState}
+        info={info}
+        onInfoUpdate={setInfo}
       />
       <QuestionList
-        state={questionState}
-        onQuestionsUpdate={setQuestionState}
+        info={info}
+        state={listState}
+        dispatch={dispatchList}
       />
-      {/* <Example /> */}
     </>
   )
 }

@@ -1,11 +1,21 @@
-import { Question, QuestionVersion } from '@chawan/forms'
-import { Listbox, RadioGroup, Transition } from '@headlessui/react'
-import { CalendarIcon, TagIcon, UserCircleIcon } from '@heroicons/react/20/solid'
-import { QuestionData } from './List'
-import { Fragment, useState } from 'react'
+import { Fragment, useState } from 'react';
+
+import { Listbox, RadioGroup, Transition } from '@headlessui/react';
+import { CalendarIcon, TagIcon, UserCircleIcon } from '@heroicons/react/20/solid';
+
+// import { Question, QuestionVersion } from '@chawan/forms'
+// import { ListAction } from '@chawan/react';
+
+import { QuestionData } from './List';
 
 // import { InputChip } from './InputChip'
 
+// TODO: Move placeholder data here
+// import {
+//   USERS,
+//   LABELS,
+//   DUE_DATES
+// } from '../../data'
 const assignees = [
   { name: 'Unassigned', value: null },
   {
@@ -73,44 +83,30 @@ function MyRadioGroup() {
 type StateProp<T, U = React.Dispatch<React.SetStateAction<T>>> = [T, U, (() => void)?]
 interface EditorProps {
   editorState: StateProp<boolean>
-  questionState?: StateProp<Question, (q: Question) => void>
-  versionState: StateProp<QuestionVersion | null>
-  actions: Record<string, any>
+  // versionState: StateProp<QuestionVersion | null>
   data: QuestionData
+  setData: Function
 }
-export default function Editor(props: EditorProps) {
+export function Editor(props: EditorProps) {
+  const { data, setData } = props
   const setEditorVisibility = props?.editorState?.[1]
-
-  // FIXME: Cutting my losses here and not trying to sync with the data model anymore
 
   const [assigned, setAssigned] = useState(assignees[0])
   const [labelled, setLabelled] = useState(labels[0])
   const [dated, setDated] = useState(dueDates[0])
 
-
-  const { data } = props
-  const {
-    data: setQuestionState,
-    title: setQuestionTitle,
-    type: setQuestionType,
-    choices: setQuestionChoices,
-  } = props.actions
-
   type QuestionData = {
     title: string
     type: string
-    choices: string[]
+    choices?: string[]
   }
-  
-  // const [questionDescription, setQuestionDescription] = useState<string>('')
-  // const [questionTitle, setQuestionTitle] = useState<string>(getRandomQuestion())
-  // const [type, setType] = useState<string>(types[0].value)
-  // const [choices, setChoices] = useState<string[]>(['Option 1', 'Option 2'])
 
   const setChoice = (index: number, value: string) => {
-    const newChoices = setQuestionChoices.slice(0)
-    newChoices[index] = value
-    return setQuestionChoices(newChoices)
+    const choices = [...data.choices || []]
+    if (value) {
+      choices[index] = value
+    }
+    setData({ choices })
   }
 
   return (
@@ -129,7 +125,7 @@ export default function Editor(props: EditorProps) {
           className="block resize-none w-full border-0 pt-2.5 text-lg font-medium placeholder-gray-500 focus:ring-0"
           placeholder="Write your question here"
           value={data.title}
-          onChange={(e) => setQuestionTitle(e.target.value)}
+          onChange={(e) => setData({ title: e.target.value })}
         />
 
         {/* TODO: Replace this with a proper UI component */}
@@ -139,7 +135,7 @@ export default function Editor(props: EditorProps) {
             id="title"
             className="block w-full border-0 pt-2.5 placeholder-gray-500 focus:ring-0"
             value={data.type}
-            onChange={(e) => setQuestionType(e.target.value)}
+            onChange={(e) => setData({ type: e.target.value })}
             >
             {types.map((type, t) => (
               <option value={type.value} key={type.value || t}>{type.name}</option>
@@ -158,13 +154,31 @@ export default function Editor(props: EditorProps) {
               (data.type === 'select' || data.type === 'mselect') && <div className='flex flex-col space-y-2'>
                 {data.choices?.map((choice, c) => (
                   <input
-                    className="block w-full rounded-sm border p-1 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm placeholder-gray-500 focus:ring-0"
+                    className="
+                      block w-full rounded-sm border p-1 sm:text-sm
+                      border-gray-300 shadow-sm
+                      focus:border-indigo-500 focus:ring-indigo-500
+                      placeholder-gray-500 focus:ring-0
+                    "
                     key={c}
                     value={choice}
                     placeholder="Choice"
                     onChange={(e) => setChoice(c, e.target.value)}
                   />
                 ))}
+
+                <input
+                  className="
+                    block w-full rounded-sm border p-1 sm:text-sm
+                    border-gray-300 shadow-sm
+                    focus:border-indigo-500 focus:ring-indigo-500
+                    placeholder-gray-500 focus:ring-0
+                  "
+                  key={data.choices?.length || 0}
+                  value={''}
+                  placeholder="Choice"
+                  onChange={(e) => setChoice(data.choices?.length || 0, e.target.value)}
+                />
               </div>
             }
           </div>

@@ -1,47 +1,109 @@
-import { useEffect, useState } from 'react'
+import React, { Fragment, useEffect, useState } from 'react';
 
-import type { Question, QuestionVersion } from '@chawan/forms'
-import { createQuestion, createQuestionVersion, getLoopItem } from '@chawan/forms'
-import { Transition } from '@headlessui/react'
+import type { Question, QuestionVersion } from '@chawan/forms';
+// import { createQuestion, createQuestionVersion } from '@chawan/forms';
+import { ListAction, ListState } from '@chawan/react';
+// import { Transition } from '@headlessui/react';
 
-import { QUESTIONS } from '../../data'
-import { PlusIcon, RemoveIcon, TypedIcon } from './Icon'
-import Editor from './Edit'
 
-type QuestionListState = {
-  questions: Array<Question>
+import { Editor } from './Edit';
+import { PlusIcon, RemoveIcon, TypedIcon } from './Icon';
+
+type QuestionListInfo = {
+  title: string
   lang: string
 }
-
-// FIXME: Find a better place for this
+type QuestionListState = ListState<QuestionData>
+type QuestionListAction = React.Dispatch<ListAction<QuestionData>>
 export type QuestionData = {
   title: string
   type: string
   choices?: string[]
 }
-// /FIXME:
+
+interface ListProps {
+  info: QuestionListInfo
+  state: QuestionListState
+  dispatch: QuestionListAction
+}
+export const QuestionList = (props: ListProps) => {
+  const { state, dispatch } = props
+
+  /*
+  // TODO: Actually implement sorting and filtering
+  const [[_filterBy, _sortBy], _setFilter] = useState<[
+    keyof typeof filters,
+    keyof typeof sort
+  ]>(['all', 'index'])
+
+  const filters = {
+    'all': Boolean
+  }
+  const sort = {
+    'index': () => 0,
+    'mod-asc': (a?: Question, b?: Question) =>
+      (a?.modified_on.getTime() || 0) - (b?.modified_on.getTime() || 0)
+    ,
+    'mod-dec': (a?: Question, b?: Question) =>
+      (a?.modified_on.getTime() || 0) - (b?.modified_on.getTime() || 0)
+  }
+  */
+
+
+  return (
+    <div className="
+      border-t border-gray-200
+      pl-4 pr-6 pt-4 pb-4 sm:pl-6 lg:pl-8 xl:border-t-0 xl:pl-6 xl:pt-6 flow-root
+    ">
+      <ul role="list" className="-mb-8 isolate">
+        {state.order
+          .map((id, q, array) => {
+            const questionData = state.data[id]
+
+            if (!questionData) return <Fragment key={q} />
+
+            return (
+              <QuestionWrapper
+                {...props}
+                key={id}
+                question={questionData}
+                index={q}
+                state={state}
+                dispatch={dispatch}
+              />
+            )
+          })
+          // .filter(filters[filterBy])
+          // .sort(sort[sortBy])
+        }
+      </ul>
+    </div>
+  )
+}
 
 type Status = 'good' | 'normal' | 'warn' | 'alert'
 type QuestionStatus = [Status, string]
 const getStatus = (
-  question: Question,
-  _index: number,
-  questions: Question[],
-  state: QuestionListState
+  data: QuestionData,
+  // _index: number,
+  state: QuestionListState,
+  info: QuestionListInfo
 ): QuestionStatus => {
-  if (question.deleted) return ['alert', 'Question no longer exists']
-  if (question.nickname) return ['warn', 'Question should have a nickname']
-  if (
-    state.lang !== question.lang ||
-    question.lang !== questions?.[0].lang
-  ) return ['warn', 'Inconsistent mix of translations']
+  if (!data) return ['alert', 'Question does not exist']
 
-  if (question.versions?.length) {
-    const activeVersion = inferActiveQuestionVersion(question)
+  // if (question.deleted) return ['alert', 'Question no longer exists']
+  // if (question.nickname) return ['warn', 'Question should have a nickname']
 
-    if (!activeVersion) return ['alert', 'No Valid Versions Found']
-    if (activeVersion.content.data.question.val) return ['good', '']
-  }
+  // if (
+  //   info.lang !== question.lang ||
+  //   question.lang !== questions?.[0].lang
+  // ) return ['warn', 'Inconsistent mix of translations']
+  // if (question.versions?.length) {
+  //   const activeVersion = inferActiveQuestionVersion(question)
+
+  //   if (!activeVersion) return ['alert', 'No Valid Versions Found']
+  //   if (activeVersion.content.data.question.val) return ['good', '']
+  // }
 
   return ['normal', '']
 }
@@ -95,97 +157,75 @@ const Controls = ({ last, actions }: ControlProps) => {
 
 interface QuestionProps extends ListProps {
   index: number
-  question: Question
-  questions: Question[]
+  question: QuestionData
   state: QuestionListState
-  onQuestionsUpdate: React.Dispatch<React.SetStateAction<QuestionListState>>
 }
 export const QuestionWrapper = (props: QuestionProps) => {
-  // TODO: Convert to reducers
-  /*
-  const initialValue = {
-    question: '',
-    questionVersions: [],
-    type: '',
-    payload: '',
-  };
+  const {
+    question,
+    index: q,
+    state,
+    dispatch,
+    info
+  } = props
 
-  const reducer = (state, action) => {
-    switch (action.type) {
-      case 'update':
-        return {
-          ...state,
-          [action.payload.key]: action.payload.value,
-        };
-      default:
-        throw new Error(`Unknown action type: ${action.type}`);
-    }
-  };
-  const inputAction = (event) => {
-    dispatch({
-      type: 'update',
-      payload: { key: event.target.name, value: event.target.value },
-    });
-  };
-  */
+  const [showEditor, setEditorVisibility] = useState<boolean>(true)
+  const [[status, _statusMessage], setStatus] = useState<[Status, string]>(['normal', ''])
+  const [activeQuestionVersion, setActiveQuestionVersion] = useState<QuestionVersion | null>(null)
 
-  const { question, index: q, questions, state, onQuestionsUpdate } = props
-  const [[status, statusMessage], setStatus] = useState<[Status, string]>(['normal', ''])
-  const MOOD_RING = {
-    good: 'text-enveritas-700',
-    normal: 'text-jebena-500',
-    warn: 'text-yellow-500',
-    alert: 'text-enveritas-700',
-  }
-
-  // FIXME: This logic should probably be further up the tree
   const addQuestion = () => {
+    /*
     const newQuestion = createQuestion({ typ: question.typ })
     const newVersion = createQuestionVersion({}, newQuestion, {
       val: 'Who are you?',
       type: newQuestion.typ
     })
+
     newQuestion.versions.push(newVersion)
-    onQuestionsUpdate({ ...state, questions: [...questions, newQuestion]})
-  }
+    */
 
-
-  const [questionData, setQuestionData] = useState<QuestionData>({
-    title: getLoopItem(QUESTIONS, q),
-    type: 'text',
-  })
-  const setQuestionState = (questionDataInput: QuestionData) => {
-    setQuestionData(questionDataInput)
-  }
-  const setQuestionTitle = (title: QuestionData['title']) => {
-    setQuestionData({ ...questionData, title })
-  }
-  const setQuestionType = (type: QuestionData['type']) => {
-    setQuestionData({ ...questionData, type })
-  }
-  const setQuestionChoices = (choices: QuestionData['choices']) => {
-    setQuestionData({ ...questionData, choices })
-  }
-
-  const removeQuestion = () => {
-    onQuestionsUpdate({
-      ...state,
-      questions: questions.filter((_, idx) => q !== idx)
+    dispatch({
+      type: 'add_item',
+      payload: {
+        title: '',
+        type: 'text',
+        choices: [],
+      }
     })
   }
 
-  const [showEditor, setEditorVisibility] = useState<boolean>(true)
+  // const setQuestion = (properties: Partial<QuestionData>) => {
+  //   dispatch({
+  //     type: 'set_data',
+  //     data: {
+  //       ...question,
+  //       ...properties,
+  //     }
+  //   })
+  // }
+
+  const setQuestionData = (arg: Partial<QuestionData> | ((data: QuestionData) => QuestionData)) => {
+    dispatch({
+      type: 'set_data',
+      id: q,
+      payload: typeof arg === 'function'
+        ? arg(question)
+        : { ...question, ...arg },
+    })
+  }
+
+  const removeQuestion = () => {
+    dispatch({ type: 'delete_data', id: q })
+  }
+
   const revealEditor = () => { setEditorVisibility(true) }
   const toggleEditor = () => { setEditorVisibility(!showEditor) }
 
-
-  const [activeQuestionVersion, setActiveQuestionVersion] = useState<QuestionVersion | null>(null)
-
-  const resetActiveQuestionVersion = () => {
-    setActiveQuestionVersion(
-      inferActiveQuestionVersion(question)
-    )
-  }
+  // const resetActiveQuestionVersion = () => {
+  //   setActiveQuestionVersion(
+  //     inferActiveQuestionVersion(question)
+  //   )
+  // }
 
 
   const actions = {
@@ -194,8 +234,16 @@ export const QuestionWrapper = (props: QuestionProps) => {
   }
 
   useEffect(() => {
-    setStatus(getStatus(question, q, questions, state))
-  }, [question, state.lang, q])
+    setStatus(getStatus(question, state, info))
+  }, [question, info.lang, q])
+
+
+  const MOOD_RING = {
+    good: 'text-enveritas-700',
+    normal: 'text-jebena-500',
+    warn: 'text-yellow-500',
+    alert: 'text-enveritas-700',
+  }
 
   return (
     <li>
@@ -226,30 +274,40 @@ export const QuestionWrapper = (props: QuestionProps) => {
               transition hover:ring-offset-2 hover:ring-8`
             }>
               <TypedIcon
-                typ={question.typ}
+                typ={question.type}
                 className="h-5 w-5 text-current opacity-95"
                 aria-hidden="true"
               />
             </div>
           </div>
-          <div className={ `cursor-default min-w-0 flex-1 transition ${ !showEditor ? 'opacity-100' : 'opacity-0' }` }>
+          <div className={
+            `cursor-default min-w-0 flex-1 transition ${
+              !showEditor ? 'opacity-100' : 'opacity-0'
+            }`
+          }>
             <div>
               <div className="text-sm">
                 <div className="font-medium text-gray-900">
-                  {question.nickname || `Question ${q + 1}`}
+                  {question.title || `Question ${q + 1}`}
                 </div>
               </div>
               {/* <p className="mt-0.5 text-sm text-gray-500">{formatDate(question.modified_on)}</p> */}
             </div>
             <div className="mt-2 text-xs text-gray-700">
-              <p>{question.lang}</p>
+              <p>{info.lang}</p>
             </div>
           </div>
         </div>
 
 
         {/* Question Editor */}
-        <Transition
+        <Editor
+          editorState={[showEditor, setEditorVisibility]}
+          // versionState={[activeQuestionVersion, setActiveQuestionVersion, resetActiveQuestionVersion]}
+          data={question}
+          setData={setQuestionData}
+        />
+        {/* <Transition
           appear={true}
           show={showEditor}
           as={'div'}
@@ -260,73 +318,14 @@ export const QuestionWrapper = (props: QuestionProps) => {
           leave="transition duration-200"
           leaveFrom="opacity-100 translate-y-0"
           leaveTo="opacity-0"
-        >
-          <Editor
-            editorState={[showEditor, setEditorVisibility]}
-            // questionState={[question, setQuestionState]}
-            versionState={[activeQuestionVersion, setActiveQuestionVersion, resetActiveQuestionVersion]}
-            data={questionData}
-            actions={{
-              data: setQuestionState,
-              title: setQuestionTitle,
-              type: setQuestionType,
-              choices: setQuestionChoices,
-            }}
-          />
-        </Transition>
-
+        /> */}
 
         <Controls
-          last={q === questions.length - 1}
+          last={q === state.size - 1}
           actions={actions}
         />
       </div>
     </li>
-  )
-}
-
-interface ListProps {
-  state: QuestionListState
-  onQuestionsUpdate: React.Dispatch<React.SetStateAction<QuestionListState>>
-}
-export const QuestionList = ({ state, onQuestionsUpdate }: ListProps) => {
-  // TODO: Actually implement sorting and filtering
-  const [[filterBy, sortBy], setFilter] = useState<[
-    keyof typeof filters,
-    keyof typeof sort
-  ]>(['all', 'index'])
-
-  const filters = {
-    'all': Boolean
-  }
-  const sort = {
-    'index': () => 0,
-    'mod-asc': (a: Question, b: Question) => (a.modified_on.getTime() - b.modified_on.getTime()),
-    'mod-dec': (a: Question, b: Question) => (a.modified_on.getTime() - b.modified_on.getTime())
-  }
-
-  return (
-    <div className="
-      border-t border-gray-200
-      pl-4 pr-6 pt-4 pb-4 sm:pl-6 lg:pl-8 xl:border-t-0 xl:pl-6 xl:pt-6 flow-root
-    ">
-      <ul role="list" className="-mb-8 isolate">
-        {state.questions
-          .filter(filters[filterBy])
-          .sort(sort[sortBy])
-          .map((question, q) => (
-            <QuestionWrapper
-              key={question.uuid}
-              question={question}
-              index={q}
-              questions={state.questions}
-              state={state}
-              onQuestionsUpdate={onQuestionsUpdate}
-            />
-          ))
-        }
-      </ul>
-    </div>
   )
 }
 
