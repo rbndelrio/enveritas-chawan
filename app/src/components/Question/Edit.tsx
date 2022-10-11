@@ -39,8 +39,9 @@ export function Editor(props: EditorProps) {
     dueDate: useState(DUE_DATES[0]),
     type: useState(getType(data.type))
   }
-
   const [type, setTypeComponent] = controls.type
+  const [editor, setEditor] = controls.editor
+
   const setType = (type: TypeOption) => {
     setTypeComponent(type)
     setData({ type: type.value })
@@ -151,7 +152,7 @@ export function Editor(props: EditorProps) {
           }
           right={
             <>
-              <PrimaryButton onClick={(e) => { e.preventDefault(); controls.editor[1](true); }}>
+              <PrimaryButton onClick={(e) => { e.preventDefault(); setEditor(false); }}>
                 Save
               </PrimaryButton>
             </>

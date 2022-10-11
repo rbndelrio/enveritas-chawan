@@ -37,7 +37,10 @@ export const ProjectList = ({ projects }: Props) => {
         return (
           <li
             key={id}
-            className="relative py-5 pl-4 pr-6 hover:bg-gray-50 sm:py-6 sm:pl-6 lg:pl-8 xl:pl-6 delay-[var(--i)]"
+            className="
+              relative py-5 pl-4 pr-6 hover:bg-gray-50
+              sm:py-6 sm:pl-6 lg:pl-8 xl:pl-6 delay-[var(--i)]
+            "
           >
             <ProjectListItem data={project} />
           </li>
