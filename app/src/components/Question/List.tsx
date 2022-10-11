@@ -3,7 +3,7 @@ import React, { Fragment, useEffect, useState } from 'react';
 import type { Question, QuestionVersion } from '@chawan/forms';
 // import { createQuestion, createQuestionVersion } from '@chawan/forms';
 import { ListAction, ListState } from '@chawan/react';
-// import { Transition } from '@headlessui/react';
+import { Transition } from '@headlessui/react';
 
 
 import { Editor } from './Edit';
@@ -60,14 +60,13 @@ export const QuestionList = (props: ListProps) => {
           .map((id, q, array) => {
             const questionData = state.data[id]
 
-            if (!questionData) return <Fragment key={q} />
-
+            if (!questionData) return <Fragment key={id} />
             return (
               <QuestionWrapper
                 {...props}
                 key={id}
                 question={questionData}
-                index={q}
+                index={id}
                 state={state}
                 dispatch={dispatch}
               />
@@ -113,27 +112,31 @@ const inferActiveQuestionVersion = (question: Question) => question.versions.fin
 ) || null
 
 type ControlProps = {
+  only: boolean,
   last: boolean,
   actions: Record<string, React.MouseEventHandler<HTMLButtonElement>>
 }
-const Controls = ({ last, actions }: ControlProps) => {
+const Controls = ({ only, last, actions }: ControlProps) => {
   return (
     <>
       <div className="absolute top-4 right-0">
-        <button
-          type="button"
-          onClick={actions.remove}
-          className="
-            opacity-0
-            group-hover:opacity-100
-            inline-flex items-center rounded-full border border-transparent shadow-none
-            bg-transparent p-1 text-gray-600
-            hover:bg-gray-200 hover:text-rose-700 hover:shadow-sm
-            focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2
-          "
-        >
-          <RemoveIcon />
-        </button>
+        {only
+          ? <></>
+          : <button
+              type="button"
+              onClick={actions.remove}
+              className="
+                opacity-0
+                group-hover:opacity-100
+                inline-flex items-center rounded-full border border-transparent shadow-none
+                bg-transparent p-1 text-gray-600
+                hover:bg-gray-200 hover:text-rose-700 hover:shadow-sm
+                focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2
+              "
+            >
+              <RemoveIcon />
+            </button>
+        }
       </div>
       {last
         ? <div className="absolute -bottom-8 left-0">
@@ -215,7 +218,7 @@ export const QuestionWrapper = (props: QuestionProps) => {
   }
 
   const removeQuestion = () => {
-    dispatch({ type: 'delete_data', id: q })
+    dispatch({ type: 'remove_item', id: q })
   }
 
   const revealEditor = () => { setEditorVisibility(true) }
@@ -301,13 +304,7 @@ export const QuestionWrapper = (props: QuestionProps) => {
 
 
         {/* Question Editor */}
-        <Editor
-          editorState={[showEditor, setEditorVisibility]}
-          // versionState={[activeQuestionVersion, setActiveQuestionVersion, resetActiveQuestionVersion]}
-          data={question}
-          setData={setQuestionData}
-        />
-        {/* <Transition
+        <Transition
           appear={true}
           show={showEditor}
           as={'div'}
@@ -318,10 +315,18 @@ export const QuestionWrapper = (props: QuestionProps) => {
           leave="transition duration-200"
           leaveFrom="opacity-100 translate-y-0"
           leaveTo="opacity-0"
-        /> */}
+        >
+          <Editor
+            editorState={[showEditor, setEditorVisibility]}
+            // versionState={[activeQuestionVersion, setActiveQuestionVersion, resetActiveQuestionVersion]}
+            data={question}
+            setData={setQuestionData}
+          />
+        </Transition>
 
         <Controls
-          last={q === state.size - 1}
+          only={state.order.length <= 1}
+          last={q === state.order[state.order.length - 1]}
           actions={actions}
         />
       </div>

@@ -27,7 +27,7 @@ export type ListActionType =
   'set_active' | 'set_index' | 'set_data' | 'delete_data' |
 
   // Mutations with side effects
-  'add_item' | 'add_items';
+  'add_item' | 'add_items' | 'remove_item' | 'delete_item';
 
   // ¯\_(ツ)_/¯
   // string;
@@ -79,7 +79,7 @@ export function listReducer<T = unknown>(
   action: ListAction<T>
 ): ListState<T> {
   const last = action.type
-  // console.log(action)
+  console.log(action)
 
   switch (action.type) {
     case 'init': {
@@ -223,6 +223,51 @@ export function listReducer<T = unknown>(
           ...state.data,
           ...ids.reduce<Record<number, T>>((obj, id, i) => { obj[id] = items[i]; return obj }, {})
         },
+      }
+    }
+    case 'remove_item': {
+      const id = Math.min(Math.max(action.id ?? state.active, 0), state.size)
+      const size = state.size - 1
+      const order = [...state.order]
+
+      order.splice(
+        Number.isInteger(action.id) ? order.lastIndexOf(id) : state.index,
+        1
+      )
+
+      const index = Math.min(state.index, state.order.length - 1)
+      const active = Math.min(state.active, size)
+
+      return {
+        ...state,
+        index,
+        active,
+        last,
+        order,
+      }
+    }
+    case 'delete_item': {
+      const id = Math.min(Math.max(action.id ?? state.active, 0), state.size)
+      const size = state.size - 1
+      const data = { ...state.data }
+      delete data[id]
+
+      const order = [...state.order]
+      order.splice(
+        Number.isInteger(action.id) ? order.lastIndexOf(id) : state.index,
+        1
+      )
+
+      const index = Math.min(state.index, state.order.length - 1)
+      const active = Math.min(state.active, size)
+
+      return {
+        index,
+        active,
+        size,
+        last,
+        order,
+        data,
       }
     }
     default: {
