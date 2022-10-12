@@ -24,7 +24,7 @@ export const QuestionHeader = ({
         mb-7
       ">
         <div className="flex items-center">
-          <div className="flex-1">
+          <div className="flex-1 mb-2">
             <h1 className="text-2xl font-semibold">{title || 'Survey Name'}</h1>
             <div className="prose">
               <p>{ description || 'Survey Description' }</p>

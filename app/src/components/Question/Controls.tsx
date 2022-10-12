@@ -52,10 +52,15 @@ export const QuestionControls = ({
         )}
       >Language</FancyDropdown>
 
+      <div className="mr-auto flex-1" />
+
       <FancyDropdown
         onChange={(v) => {}}
         options={[
-          { name: 'Default View', value: 'default' }
+          { name: 'Linear (default)', value: 'default' },
+          { name: 'Compact', value: 'compact' },
+          { name: 'Grid', value: 'grid' },
+          { name: 'Table', value: 'table' },
         ]}
         state='default'
         icon={(
