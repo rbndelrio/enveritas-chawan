@@ -8,10 +8,10 @@ export const QUESTIONS = [
 ]
 
 export const LANGUAGE_OPTIONS = [
-  { lang: 'en-US', name: 'English (U.S.)' },
-  { lang: 'pt-BR', name: 'Portuguese (Brazil)' },
-  { lang: 'jv-ID', name: 'Javanese (Indonesia)' },
-  { lang: 'rw-RW', name: 'Kinyarwanda (Rwanda)' },
+  { value: 'en-US', name: 'English (U.S.)' },
+  { value: 'pt-BR', name: 'Portuguese (Brazil)' },
+  { value: 'jv-ID', name: 'Javanese (Indonesia)' },
+  { value: 'rw-RW', name: 'Kinyarwanda (Rwanda)' },
 ]
 
 export const USERS = [
