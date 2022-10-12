@@ -298,7 +298,7 @@ export const QuestionWrapper = (props: QuestionProps) => {
               outline-current outline-2
               outline
 
-              ring-4 cursor-default -ring-offset-3 ring-current hover:ring-current ring-opacity-80
+              ring-4 cursor-grab -ring-offset-3 ring-current hover:ring-current ring-opacity-80
               transition hover:ring-offset-2 hover:ring-8`
               )
             }>
