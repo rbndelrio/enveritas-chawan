@@ -69,7 +69,7 @@ export function Editor(props: EditorProps) {
   }
 
   return (
-    <div className="relative bg-white">
+    <div className="relative bg-white rounded-lg">
       <div className="
         overflow-hidden rounded-lg border border-gray-300 shadow-sm
         focus-within:border-enveritas-500 focus-within:ring-1focus-within:ring-enveritas-500

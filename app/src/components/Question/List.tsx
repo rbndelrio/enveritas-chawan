@@ -384,7 +384,7 @@ export const QuestionWrapper = (props: QuestionProps) => {
           leaveFrom="opacity-100 translate-y-0"
           leaveTo="opacity-0"
         >
-          <div className="relative bg-white mx-8 ml-12 -mt-10 top-0">
+          <div className="relative bg-white rounded-lg mx-8 ml-12 -mt-10 top-0">
             <Editor
               editorState={[showEditor, setEditorVisibility]}
               // versionState={[activeQuestionVersion, setActiveQuestionVersion, resetActiveQuestionVersion]}
