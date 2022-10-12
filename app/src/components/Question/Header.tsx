@@ -31,7 +31,10 @@ export const QuestionHeader = ({
             </div>
           </div>
 
-          <div className="flex flex-shrink space-x-3 justify-end mb-auto mt-1">
+          <div className="
+            flex flex-shrink flex-row flex-wrap items-center justify-end
+            space-x-3 mt-1 mb-auto
+          ">
             {operations}
           </div>
         </div>
