@@ -164,9 +164,6 @@ export function Editor(props: EditorProps) {
   )
 }
 
-interface ButtonProps extends React.ComponentPropsWithoutRef<'button'> {
-}
-
 type Input<T = string, U = HTMLInputElement> = {
   value: T
   onChange: FormEventHandler<U>
@@ -320,6 +317,7 @@ const LayoutLower = (props: LowerActionBarProps) =>
   </div>
 
 
+interface ButtonProps extends React.ComponentPropsWithoutRef<'button'> {}
 const PrimaryButton = ({ className, children, ...props }: ButtonProps) => (
   <button
     {...props}

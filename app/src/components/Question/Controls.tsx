@@ -46,12 +46,12 @@ const FancyDropdown = (
   <Menu as="div" className="relative">
     <Menu.Button className="
       inline-flex w-full justify-center rounded-md border border-gray-300
-      bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm
-      hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
+      bg-white px-2 py-1.5 text-sm font-medium text-gray-700
+      hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-jebena-500 focus:ring-offset-2
     ">
       {props.icon}
       <>{(props.options || []).find(v => v.value === props.state)?.name || props.children}</>
-      <ChevronDownIcon className="ml-2.5 -mr-1.5 h-5 w-5 text-gray-400" aria-hidden="true" />
+      <ChevronDownIcon className="ml-2 h-5 w-5 text-gray-400" aria-hidden="true" />
     </Menu.Button>
     <Menu.Items className="
       absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg
@@ -64,7 +64,7 @@ const FancyDropdown = (
               <button
                 className={classNames(
                   active || props.state === value ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
-                  'block w-full text-left px-4 py-2 text-sm'
+                  'block w-full text-left px-4 py-2 text-sm font-medium'
                 )}
                 onClick={(e) => props.onChange(value, e)}
               >{ name }</button>
@@ -76,8 +76,49 @@ const FancyDropdown = (
   </Menu>
 )
 
-export const QuestionControls = ({ info, onInfoUpdate }: Props) => {
+interface ButtonProps extends React.ComponentPropsWithoutRef<'button'> {
+  primary?: boolean
+}
+const Button = ({ className, children, primary, ...props }: ButtonProps) => (
+  <button
+    {...props}
+    className={`
+      inline-flex items-center rounded-md border border-transparent
+      px-2 py-1.5 text-sm font-medium shadow-sm
+      focus:outline-none focus:ring-2 focus:ring-enveritas-600 ${
+      primary
+        ? 'bg-enveritas-600 hover:bg-enveritas-700 text-white focus:ring-offset-2'
+        : 'bg-white hover:bg-gray-100 text-enveritas-700 border border-enveritas-700'
+    }`}
+  >
+    { children || 'Submit' }
+  </button>
+)
+
+export const QuestionControls = ({
+  info,
+  onInfoUpdate,
+  selection
+}: Props) => {
+  const [selectedItems, setSelection] = selection.items
   const setLanguage = (lang: string) => onInfoUpdate({ ...info, lang })
+
+  if (selectedItems.length) {
+    return (
+      <>
+        <Button
+          primary
+          onClick={() => console.log('Implement me!')}
+        >
+          Create Block ({selectedItems.length})
+        </Button>
+
+        <Button onClick={() => setSelection([])}>
+          Clear Selection
+        </Button>
+      </>
+    )
+  }
 
   return (
     <>
@@ -87,7 +128,7 @@ export const QuestionControls = ({ info, onInfoUpdate }: Props) => {
         state={info.lang}
         icon={(
           <GlobeEuropeAfricaIcon
-            className="mr-3 h-5 w-5 text-gray-400"
+            className="mr-2 h-5 w-5 text-gray-400"
             aria-hidden="true"
           />
         )}
