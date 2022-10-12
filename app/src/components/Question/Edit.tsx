@@ -154,7 +154,7 @@ export function Editor(props: EditorProps) {
           right={
             <>
               <PrimaryButton onClick={(e) => { e.preventDefault(); setEditor(false); }}>
-                Save
+                Done
               </PrimaryButton>
             </>
           }
