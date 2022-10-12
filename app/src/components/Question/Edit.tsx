@@ -1,4 +1,4 @@
-import { FormEventHandler, Fragment, useEffect, useRef, useState } from 'react';
+import { FormEventHandler, Fragment, useRef, useState } from 'react';
 
 import { Listbox, Transition } from '@headlessui/react';
 import { CalendarIcon, TagIcon, UserCircleIcon } from '@heroicons/react/20/solid';
@@ -31,7 +31,7 @@ interface EditorProps {
 export function Editor(props: EditorProps) {
   const { data, setData } = props
 
-  const getType = (str: string): TypeOption => TYPES.find(x => x.name === str) || TYPES[0]
+  const getType = (str: string): TypeOption => (TYPES.find(x => x.value === str) || TYPES[0])
   const controls: Controls = {
     editor: props.editorState,
     label: useState(LABELS[0]),
@@ -43,8 +43,8 @@ export function Editor(props: EditorProps) {
   const [editor, setEditor] = controls.editor
 
   const setType = (type: TypeOption) => {
-    setTypeComponent(type)
     setData({ type: type.value })
+    setTypeComponent(type)
   }
 
   const setChoice = (index: number, value: string) => {
@@ -67,11 +67,6 @@ export function Editor(props: EditorProps) {
     setChoice(data.choices?.length || 0, '');
     focusChoice((data.choices?.length || 1) - 1)
   }
-
-  useEffect(() => {
-    console.log(getType(data.type))
-    // controls.type[1](data.type)
-  }, [data.type])
 
   return (
     <div className="relative bg-white">
@@ -197,7 +192,11 @@ interface FancyInput<T> {
   options?: T[]
 }
 const FancyTypeInput = ({ value, options, onChange }: FancyInput<TypeOption>) => (
-  <Listbox value={value} onChange={(value) => onChange(value)}>
+  <Listbox
+    value={value}
+    onChange={(value) => onChange(value)}
+    defaultValue={value}
+  >
     {({ open }) => (
       <div className="mt-3 px-2">
         <Listbox.Button

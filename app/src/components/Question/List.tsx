@@ -265,13 +265,13 @@ export const QuestionWrapper = (props: QuestionProps) => {
         f = Math.min(lastIndex, q),
         t = Math.max(lastIndex, q)
 
-      console.log('shift', f, t, order)
+      // console.log('shift', f, t, order)
       order.slice(f, t).forEach(id => { if (!state.includes(id)) newState.push(id) })
       return setState(newState)
     }
 
     newState.push(q)
-    console.log('push', q, index, newState)
+    // console.log('push', q, index, newState)
     return setState(newState)
   }
 
@@ -288,10 +288,10 @@ export const QuestionWrapper = (props: QuestionProps) => {
   }, [question, info.lang, q])
 
   useEffect(() => {
-    console.log(
-      'setHighlight',
-      props.selection.items[0].includes(q)
-    )
+    // console.log(
+    //   'setHighlight',
+    //   props.selection.items[0].includes(q)
+    // )
     setHighlight(props.selection.items[0].includes(q))
   }, [props.selection.items[0], q])
 
@@ -364,7 +364,7 @@ export const QuestionWrapper = (props: QuestionProps) => {
             </div>
             <div className="mt-2 text-xs text-gray-700">
               <p>{
-                TYPES.find(type => type.value === question.type || 'text')?.name || ''
+                TYPES.find(({ value }) => value === (question.type || 'text'))?.name || ''
               }</p>
             </div>
           </div>
@@ -375,21 +375,23 @@ export const QuestionWrapper = (props: QuestionProps) => {
         <Transition
           appear={true}
           show={showEditor}
-          as={'div'}
-          className="relative z-10 bg-white mx-8 ml-12 -mt-10 top-0 transform"
-          enter="transition duration-150 translate-y-4"
+          as={Fragment}
+          enter="transform transition duration-150 translate-y-4"
           enterFrom="opacity-0"
           enterTo="opacity-100 translate-y-0"
-          leave="transition duration-200"
+          entered="transform-none"
+          leave="transform transition duration-200"
           leaveFrom="opacity-100 translate-y-0"
           leaveTo="opacity-0"
         >
-          <Editor
-            editorState={[showEditor, setEditorVisibility]}
-            // versionState={[activeQuestionVersion, setActiveQuestionVersion, resetActiveQuestionVersion]}
-            data={question}
-            setData={setQuestionData}
-          />
+          <div className="relative bg-white mx-8 ml-12 -mt-10 top-0">
+            <Editor
+              editorState={[showEditor, setEditorVisibility]}
+              // versionState={[activeQuestionVersion, setActiveQuestionVersion, resetActiveQuestionVersion]}
+              data={question}
+              setData={setQuestionData}
+            />
+          </div>
         </Transition>
 
         <Controls
