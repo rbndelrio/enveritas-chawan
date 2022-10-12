@@ -12,6 +12,7 @@ import { PlusIcon, RemoveIcon, TypedIcon } from './Icon';
 
 const classNames = (...classes: string[]) => classes.filter(Boolean).join(' ')
 
+// TODO: Declare these types globally
 type StateProp<T, U = React.Dispatch<React.SetStateAction<T>>> = [T, U, (() => void)?]
 
 type QuestionListInfo = {
@@ -32,47 +33,13 @@ interface ListProps {
   info: QuestionListInfo
   state: QuestionListState
   dispatch: QuestionListAction
+  selection: {
+    items: StateProp<ListSelection>
+    lastIndex: StateProp<number>
+  }
 }
 export const QuestionList = (props: ListProps) => {
-  const { state, dispatch } = props
-  const selection = {
-    items: useState<ListSelection>([]),
-    lastIndex: useState<number>(-1),
-  }
-
-  // const [shiftHeld, setShiftHeld] = useState(false);
-  // const down = ({key}: { key: string }) => { if (key === 'Shift') setShiftHeld(true) }
-  // const up = ({key}: { key: string }) => { if (key === 'Shift') setShiftHeld(false) }
-
-  // useEffect(() => {
-  //   window.addEventListener('keydown', down);
-  //   window.addEventListener('keyup', up);
-  //   return () => {
-  //     window.removeEventListener('keydown', down);
-  //     window.removeEventListener('keyup', up);
-  //   };
-  // }, []);
-
-  /*
-  // TODO: Actually implement sorting and filtering
-  const [[_filterBy, _sortBy], _setFilter] = useState<[
-    keyof typeof filters,
-    keyof typeof sort
-  ]>(['all', 'index'])
-
-  const filters = {
-    'all': Boolean
-  }
-  const sort = {
-    'index': () => 0,
-    'mod-asc': (a?: Question, b?: Question) =>
-      (a?.modified_on.getTime() || 0) - (b?.modified_on.getTime() || 0)
-    ,
-    'mod-dec': (a?: Question, b?: Question) =>
-      (a?.modified_on.getTime() || 0) - (b?.modified_on.getTime() || 0)
-  }
-  */
-
+  const { state, dispatch, selection } = props
 
   return (
     <div className="
@@ -89,16 +56,11 @@ export const QuestionList = (props: ListProps) => {
               <QuestionWrapper
                 {...props}
                 key={id}
-                question={questionData}
                 index={id}
-                state={state}
-                dispatch={dispatch}
-                selection={selection}
+                question={questionData}
               />
             )
           })
-          // .filter(filters[filterBy])
-          // .sort(sort[sortBy])
         }
       </ul>
     </div>

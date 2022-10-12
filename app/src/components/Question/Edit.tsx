@@ -13,6 +13,7 @@ import { QuestionData } from './List';
 
 const classNames = (...classes: string[]) => classes.filter(Boolean).join(' ')
 
+// TODO: Declare these types globally
 type StateProp<T, U = React.Dispatch<React.SetStateAction<T>>> = [T, U, (() => void)?]
 interface Controls {
   editor: StateProp<boolean>
