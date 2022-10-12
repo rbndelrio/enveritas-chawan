@@ -23,7 +23,7 @@ export type QuestionData = {
 type ListSelection = Array<string|number>
 interface Props {
   info: QuestionInfo
-  onInfoUpdate: React.Dispatch<React.SetStateAction<QuestionInfo>>
+  onInfoUpdate?: React.Dispatch<React.SetStateAction<QuestionInfo>>
   state: QuestionListState
   dispatch: QuestionListAction
   selection: {
@@ -31,6 +31,85 @@ interface Props {
     lastIndex: StateProp<number>
   }
 }
+
+export const QuestionControls = ({
+  info,
+  onInfoUpdate
+}: Props) => {
+  const setLanguage = (lang: string) => onInfoUpdate?.({ ...info, lang })
+
+  return (
+    <>
+      <FancyDropdown
+        onChange={(v) => setLanguage(v)}
+        options={LANGUAGE_OPTIONS}
+        state={info.lang}
+        icon={(
+          <GlobeEuropeAfricaIcon
+            className="mr-2 h-5 w-5 text-gray-400"
+            aria-hidden="true"
+          />
+        )}
+      >Language</FancyDropdown>
+
+      <FancyDropdown
+        onChange={(v) => {}}
+        options={[
+          { name: 'Default View', value: 'default' }
+        ]}
+        state='default'
+        icon={(
+          <GlobeEuropeAfricaIcon
+            className="mr-2 h-5 w-5 text-gray-400"
+            aria-hidden="true"
+          />
+        )}
+      >Change View</FancyDropdown>
+    </>
+  )
+}
+
+export const QuestionActions = ({ selection }: Props) => {
+  const [selectedItems, setSelection] = selection?.items || []
+
+  if (!selectedItems || !selectedItems.length)
+    return (<></>)
+
+  return (
+    <>
+      <Button
+        primary
+        onClick={() => console.log('Implement me!')}
+      >
+        Create Block ({selectedItems.length})
+      </Button>
+
+      <Button onClick={() => setSelection([])}>
+        Clear Selection
+      </Button>
+    </>
+  )
+}
+
+interface ButtonProps extends React.ComponentPropsWithoutRef<'button'> {
+  primary?: boolean
+}
+const Button = ({ className, children, primary, ...props }: ButtonProps) => (
+  <button
+    {...props}
+    className={`
+      inline-flex items-center rounded-md border border-transparent
+      px-2 py-1.5 text-sm font-medium shadow-sm
+      focus:outline-none focus:ring-2 focus:ring-enveritas-600 ${
+      primary
+        ? 'bg-enveritas-600 hover:bg-enveritas-700 text-white focus:ring-offset-2'
+        : 'bg-white hover:bg-gray-100 text-enveritas-700 border border-enveritas-700'
+    }`}
+  >
+    { children || 'Submit' }
+  </button>
+)
+
 interface FancyInput<T, U = T> {
   value?: T
   onChange: (value: U, e?: any) => void
@@ -75,64 +154,3 @@ const FancyDropdown = (
     </Menu.Items>
   </Menu>
 )
-
-interface ButtonProps extends React.ComponentPropsWithoutRef<'button'> {
-  primary?: boolean
-}
-const Button = ({ className, children, primary, ...props }: ButtonProps) => (
-  <button
-    {...props}
-    className={`
-      inline-flex items-center rounded-md border border-transparent
-      px-2 py-1.5 text-sm font-medium shadow-sm
-      focus:outline-none focus:ring-2 focus:ring-enveritas-600 ${
-      primary
-        ? 'bg-enveritas-600 hover:bg-enveritas-700 text-white focus:ring-offset-2'
-        : 'bg-white hover:bg-gray-100 text-enveritas-700 border border-enveritas-700'
-    }`}
-  >
-    { children || 'Submit' }
-  </button>
-)
-
-export const QuestionControls = ({
-  info,
-  onInfoUpdate,
-  selection
-}: Props) => {
-  const [selectedItems, setSelection] = selection.items
-  const setLanguage = (lang: string) => onInfoUpdate({ ...info, lang })
-
-  if (selectedItems.length) {
-    return (
-      <>
-        <Button
-          primary
-          onClick={() => console.log('Implement me!')}
-        >
-          Create Block ({selectedItems.length})
-        </Button>
-
-        <Button onClick={() => setSelection([])}>
-          Clear Selection
-        </Button>
-      </>
-    )
-  }
-
-  return (
-    <>
-      <FancyDropdown
-        onChange={(v) => setLanguage(v)}
-        options={LANGUAGE_OPTIONS}
-        state={info.lang}
-        icon={(
-          <GlobeEuropeAfricaIcon
-            className="mr-2 h-5 w-5 text-gray-400"
-            aria-hidden="true"
-          />
-        )}
-      >Language</FancyDropdown>
-    </>
-  )
-}
