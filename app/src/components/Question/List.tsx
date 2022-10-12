@@ -287,7 +287,7 @@ export const QuestionWrapper = (props: QuestionProps) => {
         />
 
         <div
-          className="relative flex items-start space-x-3"
+          className='relative flex items-start space-x-3'
           onClick={toggleEditor}
         >
           <div className="relative px-1 user-select-none" onClick={handleSelectionEvent}>
@@ -341,8 +341,8 @@ export const QuestionWrapper = (props: QuestionProps) => {
           appear={true}
           show={showEditor}
           as={Fragment}
-          enter="transform transition duration-150 translate-y-4"
-          enterFrom="opacity-0"
+          enter="transform transition duration-150"
+          enterFrom="opacity-0 translate-y-4"
           enterTo="opacity-100 translate-y-0"
           entered="transform-none"
           leave="transform transition duration-200"
