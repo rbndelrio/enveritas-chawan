@@ -69,13 +69,29 @@ export const QuestionList = (props: ListProps) => {
 
 type Status = 'good' | 'normal' | 'warn' | 'alert'
 type QuestionStatus = [Status, string]
-const getStatus = (
+const validateQuestionData = (
   data: QuestionData,
   // _index: number,
   state: QuestionListState,
   info: QuestionListInfo
 ): QuestionStatus => {
   if (!data) return ['alert', 'Question does not exist']
+
+  if (!data.title) {
+    return ['alert', 'Missing question title']
+  }
+
+  if (data.type === 'select' || data.type === 'mselect') {
+    const { choices } = data
+    if (!choices?.length || !choices.filter(Boolean).length)
+      return ['alert', 'No choices written']
+
+    if (choices.filter(Boolean).length < 2)
+      return ['warn', 'Write least two choices']
+
+    if (choices.some((v, i, arr) => !v && (i !== (arr.length - 1))))
+      return ['warn', 'Some choices are empty']
+  }
 
   // if (question.deleted) return ['alert', 'Question no longer exists']
   // if (question.nickname) return ['warn', 'Question should have a nickname']
@@ -166,7 +182,7 @@ export const QuestionWrapper = (props: QuestionProps) => {
   } = props
 
   const [showEditor, setEditorVisibility] = useState<boolean>(true)
-  const [[status, _statusMessage], setStatus] = useState<[Status, string]>(['normal', ''])
+  const [[status, statusMessage], setStatus] = useState<[Status, string]>(['normal', ''])
   const [[highlight, highlightNext], setHighlight] = useState([false, false])
   // const [activeQuestionVersion, setActiveQuestionVersion] = useState<QuestionVersion | null>(null)
 
@@ -242,7 +258,7 @@ export const QuestionWrapper = (props: QuestionProps) => {
   }
 
   useEffect(() => {
-    setStatus(getStatus(question, state, info))
+    setStatus(validateQuestionData(question, state, info))
   }, [question, info.lang, q])
 
   useEffect(() => {
@@ -258,7 +274,7 @@ export const QuestionWrapper = (props: QuestionProps) => {
     good: 'text-enveritas-700',
     normal: 'text-jebena-500',
     warn: 'text-yellow-500',
-    alert: 'text-enveritas-700',
+    alert: 'text-red-700',
   }
 
   return (
@@ -312,23 +328,28 @@ export const QuestionWrapper = (props: QuestionProps) => {
               />
             </div>
           </div>
-          <div className={
-            `cursor-default active:cursor-grab min-w-0 flex-1 transition select-none ${
-              !showEditor ? 'opacity-100' : 'opacity-0'
-            }`
-          }>
-            <div>
-              <div className="text-sm">
+
+          <div className='relative cursor-default active:cursor-grab min-w-0 flex-1 transition select-none'>
+            <div
+              className={`absolute bottom-full left-0 mt-2 text-xs -mb-1 ${
+                (highlight || status !== 'good') ? MOOD_RING[status] : 'text-gray-700'
+              }`}
+            >
+              <p>{statusMessage}</p>
+            </div>
+            <div className={
+              `relative cursor-default active:cursor-grab min-w-0 flex-1 transition select-none top-0.5 ${
+                !showEditor ? 'opacity-100' : 'opacity-0'
+              }`
+            }>
+              <div className="text-base">
                 <div
                   className={classNames("font-medium", highlight ? MOOD_RING[status] : 'text-gray-900')}
                 >
                   {question.title || `Question ${q + 1}`}
                 </div>
               </div>
-              {/* <p className="mt-0.5 text-sm text-gray-500">{formatDate(question.modified_on)}</p> */}
-            </div>
-            <div className="mt-2 text-xs text-gray-700">
-              <p>{
+              <p className="mt-0.5 text-sm text-gray-500">{
                 TYPES.find(({ value }) => value === (question.type || 'text'))?.name || ''
               }</p>
             </div>
