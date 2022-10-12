@@ -37,8 +37,12 @@ export const Editor = () => {
 
   return (
     <>
-      <QuestionHeader>
-        <QuestionControls {...stateProps} onInfoUpdate={setInfo} />
+      <QuestionHeader
+        controls={
+          <QuestionControls {...stateProps} onInfoUpdate={setInfo} />
+        }
+      >
+        { info.title }
       </QuestionHeader>
       <QuestionList {...stateProps} />
     </>
