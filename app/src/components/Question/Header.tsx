@@ -3,6 +3,8 @@ import { ChevronDownIcon, GlobeEuropeAfricaIcon } from '@heroicons/react/20/soli
 
 import { LANGUAGE_OPTIONS } from '../../data'
 
+const classNames = (...classes: string[]) => classes.filter(Boolean).join(' ')
+
 type QuestionListState = {
   title: string
   lang: string
@@ -27,8 +29,6 @@ export const QuestionHeader = (props: Props) => {
 export default QuestionHeader
 
 const QuestionControls = ({ info, onInfoUpdate }: Props) => {
-  const classNames = (...classes: string[]) => classes.filter(Boolean).join(' ')
-
   const setLanguage = (lang: string) => onInfoUpdate({ ...info, lang })
 
   return (

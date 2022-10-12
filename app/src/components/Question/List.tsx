@@ -1,6 +1,6 @@
 import React, { Fragment, MouseEventHandler, useEffect, useState } from 'react';
 
-import type { Question, QuestionVersion } from '@chawan/forms';
+import type { Question } from '@chawan/forms';
 import { getRandomItem } from '@chawan/forms';
 import { ListAction, ListState } from '@chawan/react';
 import { Transition } from '@headlessui/react';
@@ -205,7 +205,8 @@ export const QuestionWrapper = (props: QuestionProps) => {
 
   const [showEditor, setEditorVisibility] = useState<boolean>(true)
   const [[status, _statusMessage], setStatus] = useState<[Status, string]>(['normal', ''])
-  const [activeQuestionVersion, setActiveQuestionVersion] = useState<QuestionVersion | null>(null)
+  const [[highlight, highlightNext], setHighlight] = useState([false, false])
+  // const [activeQuestionVersion, setActiveQuestionVersion] = useState<QuestionVersion | null>(null)
 
   const addQuestion = () => {
     dispatch({
@@ -241,9 +242,6 @@ export const QuestionWrapper = (props: QuestionProps) => {
   //   )
   // }
 
-  // const getItemsBetween = (arr, ) => {
-
-  // }
   const handleSelectionEvent: MouseEventHandler<HTMLElement> = e => {
     e.stopPropagation()
 
@@ -281,18 +279,16 @@ export const QuestionWrapper = (props: QuestionProps) => {
     remove: removeQuestion,
   }
 
-  const [highlight, setHighlight] = useState(false)
-
   useEffect(() => {
     setStatus(getStatus(question, state, info))
   }, [question, info.lang, q])
 
   useEffect(() => {
-    // console.log(
-    //   'setHighlight',
-    //   props.selection.items[0].includes(q)
-    // )
-    setHighlight(props.selection.items[0].includes(q))
+    const { state, selection } = props
+    setHighlight([
+      selection.items[0].includes(q),
+      selection.items[0].includes(state.order[state.order.indexOf(q) + 1])
+    ])
   }, [props.selection.items[0], q])
 
 
@@ -317,7 +313,14 @@ export const QuestionWrapper = (props: QuestionProps) => {
         <div className="absolute inset-0" onClick={toggleEditor} />
 
         <span
-          className="absolute top-5 left-5 -ml-px h-full w-0.5 bg-gray-300"
+          className={
+            `absolute top-5 left-5 -ml-px h-full w-0.5 ${
+              // Check if next item is part of selection
+              highlight && highlightNext
+                ? 'bg-current ' + MOOD_RING[status]
+                : 'bg-gray-300'
+            }`
+          }
           aria-hidden="true"
         />
 
